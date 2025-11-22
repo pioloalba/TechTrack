@@ -79,7 +79,7 @@ $config['ENVIRONMENT']             = 'development';
 | WARNING: You MUST set this value!
 |
 */
-$config['base_url'] 				= '';
+$config['base_url'] 				= 'http://localhost:8080/techtrack1.3/';
 
 /*
 |--------------------------------------------------------------------------
@@ -90,7 +90,7 @@ $config['base_url'] 				= '';
 | variable to blank.
 |
 */
-$config['index_page']               = 'index.php';
+$config['index_page']               = '';
 
 /*
 |--------------------------------------------------------------------------
@@ -105,8 +105,23 @@ $config['index_page']               = 'index.php';
 |   3 = All
 |
 */
-$config['log_threshold']            = 0;
+$config['log_threshold']            = 1;
 $config['log_dir']                  = 'runtime/logs/';
+
+/*
+|--------------------------------------------------------------------------
+| Security Settings
+|--------------------------------------------------------------------------
+|
+| CSRF Protection and Security Headers
+|
+*/
+$config['csrf_protection']          = true;
+$config['csrf_token_name']          = 'csrf_token';
+$config['csrf_cookie_name']         = 'csrf_cookie';
+$config['csrf_expire']              = 7200;
+$config['csrf_regenerate']          = true;
+$config['csrf_exclude_uris']        = ['shop/add_to_cart'];
 
 /*
 |--------------------------------------------------------------------------

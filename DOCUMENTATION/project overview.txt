@@ -1,0 +1,59 @@
+Project Structure Overview
+techtrack/
+│
+├── app/
+│   ├── Controllers/
+│   │   ├── AdminController.php
+│   │   ├── ProductController.php
+│   │   ├── OrderController.php
+│   │   ├── CustomerController.php
+│   │   ├── InventoryController.php
+│   │   ├── AlertController.php
+│   │   └── SettingController.php
+│   │
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Product.php
+│   │   ├── Order.php
+│   │   ├── OrderItem.php
+│   │   ├── Customer.php
+│   │   ├── InventoryTransaction.php
+│   │   ├── Alert.php
+│   │   └── Setting.php
+│   │
+│   └── Views/
+│       ├── admin/
+│       │   ├── dashboard.php
+│       │   ├── products.php
+│       │   ├── orders.php
+│       │   ├── inventory.php
+│       │   ├── reports.php
+│       │   ├── customers.php
+│       │   ├── alerts.php
+│       │   └── settings.php
+│       │
+│       └── customer/
+│           ├── home.php
+│           ├── shop.php
+│           ├── product_detail.php
+│           ├── checkout.php
+│           └── track_order.php
+│
+├── config/
+│   └── database.php
+│
+├── public/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── tailwind.css
+│   │   └── js/
+│   │       └── react_components/
+│   └── index.php
+│
+├── routes/
+│   └── web.php
+│
+├── sql/
+│   └── techtrack_db.sql
+│
+└── composer.json

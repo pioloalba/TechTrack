@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTrack Login Instructions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #ef4444;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .solution {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .solution h2 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .steps {
+            margin: 20px 0;
+        }
+        .step {
+            background: #f9fafb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+        .step strong {
+            color: #1f2937;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .credentials {
+            background: #dbeafe;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #10b981;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .warning {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #991b1b;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">⚠️</div>
+        <h1>CSRF Token Error - Action Required</h1>
+        <p style="color: #6b7280; margin-bottom: 20px;">You're seeing this error because the system is protecting against invalid login attempts.</p>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> You need to update the database passwords first!
+        </div>
+
+        <div class="solution">
+            <h2>🔧 Solution - 3 Simple Steps:</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <strong>Step 1: Open phpMyAdmin</strong>
+                    <p>Click the button below to open phpMyAdmin</p>
+                    <a href="http://localhost/phpmyadmin" class="btn" target="_blank">Open phpMyAdmin</a>
+                </div>
+
+                <div class="step">
+                    <strong>Step 2: Select Database & Run SQL</strong>
+                    <p>1. Click on <code>techtrack_db</code> database (left sidebar)</p>
+                    <p>2. Click on <code>SQL</code> tab</p>
+                    <p>3. Copy and paste this SQL code:</p>
+                    <div class="credentials" style="margin-top: 10px;">
+USE techtrack_db;
+
+-- Update Admin Password
+UPDATE users 
+SET password = '$2y$10$fu3JJwrbVoF2HbO5JOsdhupGJWWGrG7bDNE/B1l/zpVvEYUJIjFWK'
+WHERE email = 'admin@techtrack.com';
+
+-- Update Cashier Password
+UPDATE users 
+SET password = '$2y$10$r8bCCFkNnXGjjSjIWbhEueP5VlJA71j/ZCEaZTFguN0frWGAY5JrK'
+WHERE email = 'cashier@techtrack.com';
+                    </div>
+                    <p>4. Click <strong>Go</strong> button</p>
+                </div>
+
+                <div class="step">
+                    <strong>Step 3: Login with New Credentials</strong>
+                    <div class="credentials">
+<strong>Admin:</strong>
+Email: admin@techtrack.com
+Password: aMzNC:f9iW!64h<0nv]2
+
+<strong>Cashier:</strong>
+Email: cashier@techtrack.com
+Password: Dq7lt3Z}F;!4=5:?eYMZ
+                    </div>
+                    <a href="http://localhost:8080/techtrack1.3/admin-login" class="btn btn-success">Try Admin Login Again</a>
+                    <a href="http://localhost:8080/techtrack1.3/cashier-login" class="btn btn-success">Try Cashier Login</a>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+            <h3 style="color: #374151; margin-bottom: 15px;">Alternative: Use Old Default Passwords</h3>
+            <p style="color: #6b7280; margin-bottom: 10px;">If you haven't updated the database yet, try these:</p>
+            <div class="credentials">
+<strong>Admin (OLD):</strong>
+Email: admin@techtrack.com
+Password: admin123
+
+<strong>Cashier (OLD):</strong>
+Email: cashier@techtrack.com
+Password: cashier123
+            </div>
+            <p style="color: #ef4444; font-size: 14px; margin-top: 10px;">
+                ⚠️ <strong>Warning:</strong> These are weak passwords. Update them immediately in production!
+            </p>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="http://localhost:8080/techtrack1.3/navigation.html" class="btn">← Back to Navigation</a>
+        </div>
+    </div>
+</body>
+</html>

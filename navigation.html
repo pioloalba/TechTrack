@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTrack - Quick Navigation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            color: #374151;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .link-btn {
+            display: block;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .link-btn.shop {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .link-btn.shop:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+        .link-btn.admin {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        .link-btn.admin:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+        .link-btn.cashier {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        .link-btn.cashier:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+        .credentials {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .credentials h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .cred-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .cred-item:last-child {
+            margin-bottom: 0;
+        }
+        .cred-item strong {
+            color: #1f2937;
+            display: inline-block;
+            width: 80px;
+        }
+        .cred-item span {
+            color: #059669;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 TechTrack Navigation</h1>
+        <p class="subtitle">Quick access to all pages - Click to navigate</p>
+
+        <!-- Shop Pages -->
+        <div class="section">
+            <h2>🛍️ Customer Shop</h2>
+            <div class="links">
+                <a href="http://localhost:8080/techtrack1.3/shop" class="link-btn shop">Shop Home</a>
+                <a href="http://localhost:8080/techtrack1.3/login" class="link-btn shop">Customer Login</a>
+                <a href="http://localhost:8080/techtrack1.3/checkout" class="link-btn shop">Checkout</a>
+            </div>
+        </div>
+
+        <!-- Admin Pages -->
+        <div class="section">
+            <h2>👨‍💼 Admin Portal</h2>
+            <div class="links">
+                <a href="http://localhost:8080/techtrack1.3/admin-login" class="link-btn admin">Admin Login</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/dashboard" class="link-btn admin">Admin Dashboard</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/products" class="link-btn admin">Products</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/inventory" class="link-btn admin">Inventory</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/orders" class="link-btn admin">Orders</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/customers" class="link-btn admin">Customers</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/reports" class="link-btn admin">Reports</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/alerts" class="link-btn admin">Alerts</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/settings" class="link-btn admin">Settings</a>
+            </div>
+        </div>
+
+        <!-- Cashier Pages -->
+        <div class="section">
+            <h2>💰 Cashier/POS</h2>
+            <div class="links">
+                <a href="http://localhost:8080/techtrack1.3/cashier-login" class="link-btn cashier">Cashier Login</a>
+                <a href="http://localhost:8080/techtrack1.3/admin/pos" class="link-btn cashier">Point of Sale (POS)</a>
+            </div>
+        </div>
+
+        <!-- Login Credentials -->
+        <div class="credentials">
+            <h3>🔐 Login Credentials</h3>
+            <div class="cred-item">
+                <strong>Admin:</strong>
+                <div><span>admin@techtrack.com</span> / <span>aMzNC:f9iW!64h<0nv]2</span></div>
+            </div>
+            <div class="cred-item">
+                <strong>Cashier:</strong>
+                <div><span>cashier@techtrack.com</span> / <span>Dq7lt3Z}F;!4=5:?eYMZ</span></div>
+            </div>
+            <p style="color: #92400e; font-size: 12px; margin-top: 10px;">
+                ⚠️ Make sure you've run the SQL update script to activate these passwords!
+            </p>
+        </div>
+    </div>
+</body>
+</html>

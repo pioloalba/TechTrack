@@ -1,0 +1,55 @@
+==================================================
+COPY THIS PROMPT FOR GITHUB COPILOT / AI ASSISTANTS
+==================================================
+
+I need a login system for my TechTrack application with three user roles: Admin, Cashier, and Customer.
+
+REQUIREMENTS:
+
+1. Create a LoginPage component with tabs for role selection
+   - Admin tab (blue theme, Shield icon)
+   - Cashier tab (green theme, CreditCard icon)  
+   - Customer tab (purple theme, ShoppingBag icon)
+   - Email and password fields
+   - Password show/hide toggle
+   - "Use Demo Account" button for quick testing
+   - Display demo credentials on the page
+
+2. Add User interface and mockUsers array to lib/mockData.ts:
+   - Admin: admin@techtrack.com / admin123
+   - Cashier: cashier@techtrack.com / cashier123
+   - Customer: customer@email.com / customer123
+   - Include fields: id, email, password, name, role, phone, avatar
+
+3. Update App.tsx with authentication:
+   - Add currentUser state (User | null)
+   - Show LoginPage if not logged in
+   - Route based on user role after login
+   - Admin/Cashier → Admin interface (default to Dashboard for admin, POS for cashier)
+   - Customer → Customer shop interface
+
+4. Add logout functionality:
+   - AdminSidebar: Show user info and logout button in footer
+   - EasyPCHeader: Add user dropdown menu with logout option
+   - Both pass user and onLogout props
+
+5. Features:
+   - Toast notifications for login/logout
+   - Avatar support with fallback to initials
+   - Role-based access control
+   - Responsive design
+   - Loading states
+   - Error handling
+
+DEMO CREDENTIALS:
+Admin: admin@techtrack.com / admin123
+Cashier: cashier@techtrack.com / cashier123
+Customer: customer@email.com / customer123
+
+Use shadcn/ui components: Card, Button, Input, Tabs, Alert, DropdownMenu
+Use Lucide icons: ShoppingBag, Shield, CreditCard, Eye, EyeOff, LogOut
+Use TypeScript with proper type safety
+
+This is a demo system with client-side authentication only (no backend).
+
+==================================================

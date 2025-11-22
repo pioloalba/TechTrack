@@ -174,7 +174,7 @@ class Upload
 	 * Allowed extension. Use default if not set
 	 *
 	 * @param array $ext
-	 * @return void
+	 * @return Upload
 	 */
 	public function allowed_extensions($ext = array())
 	{
@@ -188,8 +188,8 @@ class Upload
 	/**
 	 * Allowed mime type
 	 *
-	 * @param array $mime
-	 * @return void
+	 * @param array $mimes
+	 * @return Upload
 	 */
 	public function allowed_mimes($mimes = array())
 	{
@@ -204,7 +204,7 @@ class Upload
 	 * Setting directory
 	 *
 	 * @param string $dir
-	 * @return void
+	 * @return Upload
 	 */
 	public function set_dir($dir)
 	{
@@ -213,10 +213,10 @@ class Upload
 	}
 
 	/**
-	 * Maximum size
+	 * Maximum size (MB)
 	 *
 	 * @param int $size
-	 * @return void
+	 * @return Upload
 	 */
 	public function max_size($size)
 	{
@@ -225,10 +225,10 @@ class Upload
 	}
 
 	/**
-	 * Minimum size
+	 * Minimum size (MB)
 	 *
 	 * @param int $size
-	 * @return void
+	 * @return Upload
 	 */
 	public function min_size($size)
 	{
@@ -239,7 +239,7 @@ class Upload
 	/**
 	 * Check if file is image
 	 *
-	 * @return boolean
+	 * @return Upload
 	 */
 	public function is_image()
 	{
@@ -250,7 +250,7 @@ class Upload
 	/**
 	 * Upload errors
 	 *
-	 * @return void
+	 * @return array
 	 */
 	public function get_errors() {
 		return $this->upload_errors;
@@ -402,7 +402,7 @@ class Upload
 	/**
 	 * Get filename
 	 *
-	 * @return void
+	 * @return string
 	 */
 	public function get_filename()
 	{
@@ -412,7 +412,7 @@ class Upload
 	/**
 	 * File extension
 	 *
-	 * @return void
+	 * @return string
 	 */
 	public function get_extension()
 	{
@@ -420,9 +420,9 @@ class Upload
 	}
 
 	/**
-	 * Get file size
+	 * Get file size (bytes)
 	 *
-	 * @return void
+	 * @return int
 	 */
 	public function get_size()
 	{
@@ -432,8 +432,7 @@ class Upload
 	/**
 	 * Encrypt filename
 	 *
-	 * @param string $filename
-	 * @return void
+	 * @return Upload
 	 */
 	public function encrypt_name()
 	{
