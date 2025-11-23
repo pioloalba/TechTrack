@@ -211,6 +211,11 @@ class Shop extends Controller
         }
         
         // Insert order
+        $payment_method = $payload['payment_method'] ?? 'cash';
+        
+        // Debug: log the payment method
+        error_log("Payment method received: " . $payment_method);
+        
         $order = [
             'customer_id' => $customer_id,
             'customer_name' => $payload['customer_name'] ?? 'Guest',
@@ -221,7 +226,7 @@ class Shop extends Controller
             'tax' => $tax,
             'discount' => 0,
             'total' => $total,
-            'payment_method' => $payload['payment_method'] ?? 'cash',
+            'payment_method' => $payment_method,
             'payment_status' => 'pending',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
@@ -271,6 +276,50 @@ class Shop extends Controller
         // Clear cart after successful order from database
         $ids = $this->getIdentifiers();
         $this->CartModel->clearCart($ids['customer_id'], $ids['session_id']);
+
+        // If payment method requires online payment (anything except COD), redirect to payment
+        if ($payment_method !== 'cash') {
+            error_log("Redirecting to payment page for method: " . $payment_method);
+            error_log("Order ID: " . $orderId);
+            error_log("Total: " . $total);
+            
+            // Store order ID in session for payment callback
+            $this->session->set_userdata('pending_order_id', $orderId);
+            
+            // Prepare items for PayMongo
+            $paymongo_items = [];
+            foreach ($enriched as $it) {
+                $paymongo_items[] = [
+                    'name' => $it['product_name'],
+                    'quantity' => $it['quantity'],
+                    'amount' => (int)($it['price'] * 100), // Convert to centavos
+                ];
+            }
+            
+            // Store payment data in session
+            $this->session->set_userdata('paymongo_payment_data', [
+                'order_id' => $orderId,
+                'amount' => (int)($total * 100), // Convert to centavos
+                'description' => 'Order #' . $orderId,
+                'items' => $paymongo_items,
+                'payment_method' => $payment_method,
+            ]);
+            
+            // Redirect based on payment method
+            if ($payment_method === 'card') {
+                redirect('payment/create-intent');
+                exit();
+            } elseif ($payment_method === 'gcash') {
+                redirect('payment/create-source');
+                exit();
+            } elseif ($payment_method === 'bank') {
+                redirect('payment/bank-transfer');
+                exit();
+            } else {
+                redirect('payment/create-source');
+                exit();
+            }
+        }
 
         redirect('track/' . $orderId);
     }

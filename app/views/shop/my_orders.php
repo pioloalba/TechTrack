@@ -302,9 +302,25 @@
 
         <?php if (!empty($customer) || !empty($orders)): ?>
             <?php if (!empty($orders)): ?>
+                <!-- Filter Tabs -->
+                <div style="display: flex; gap: 12px; margin-bottom: 24px; padding: 8px; background: #fff; border-radius: 12px; border: 1px solid #E5E7EB;">
+                    <button class="filter-btn active" data-filter="all" style="flex: 1; padding: 12px 20px; border: none; background: #3B82F6; color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        All Orders (<?= count($orders) ?>)
+                    </button>
+                    <button class="filter-btn" data-filter="pending" style="flex: 1; padding: 12px 20px; border: none; background: #F3F4F6; color: #374151; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Pending (<?= count(array_filter($orders, function($o) { return $o['status'] === 'pending'; })) ?>)
+                    </button>
+                    <button class="filter-btn" data-filter="processing" style="flex: 1; padding: 12px 20px; border: none; background: #F3F4F6; color: #374151; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Processing (<?= count(array_filter($orders, function($o) { return $o['status'] === 'processing'; })) ?>)
+                    </button>
+                    <button class="filter-btn" data-filter="delivered" style="flex: 1; padding: 12px 20px; border: none; background: #F3F4F6; color: #374151; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        ✅ Delivered (<?= count(array_filter($orders, function($o) { return $o['status'] === 'delivered'; })) ?>)
+                    </button>
+                </div>
+
                 <div class="orders-list">
                     <?php foreach ($orders as $order): ?>
-                        <div class="order-card">
+                        <div class="order-card" data-status="<?= strtolower($order['status'] ?? 'pending') ?>">
                             <div class="order-header">
                                 <div>
                                     <div class="order-id">Order #<?= $order['id'] ?></div>
@@ -369,5 +385,36 @@
             </div>
         <?php endif; ?>
     </div>
+
+    <script>
+        // Filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const orderCards = document.querySelectorAll('.order-card');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const filter = button.dataset.filter;
+                
+                // Update active state
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.style.background = '#F3F4F6';
+                    btn.style.color = '#374151';
+                });
+                button.classList.add('active');
+                button.style.background = '#3B82F6';
+                button.style.color = '#fff';
+                
+                // Filter orders
+                orderCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.status === filter) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

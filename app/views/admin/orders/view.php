@@ -62,6 +62,42 @@
             </div>
             <?php endif; ?>
             
+            <div>
+                <div style="color:#6B7280;font-size:13px;margin-bottom:4px;">Payment Method</div>
+                <div style="color:#111827;font-weight:600;">
+                    <?php 
+                    $paymentMethods = [
+                        'cash' => 'Cash on Delivery',
+                        'card' => 'Credit/Debit Card',
+                        'gcash' => 'GCash',
+                        'bank' => 'Bank Transfer',
+                        'grab_pay' => 'GrabPay'
+                    ];
+                    $payment = $order['payment_method'] ?? 'cash';
+                    echo html_escape($paymentMethods[$payment] ?? ucfirst($payment));
+                    ?>
+                </div>
+            </div>
+            
+            <div>
+                <div style="color:#6B7280;font-size:13px;margin-bottom:4px;">Payment Status</div>
+                <div>
+                    <?php 
+                    $paymentStatusColors = [
+                        'pending' => 'background:#FEF3C7;color:#92400E',
+                        'paid' => 'background:#D1FAE5;color:#065F46',
+                        'failed' => 'background:#FEE2E2;color:#991B1B',
+                        'pending_verification' => 'background:#DBEAFE;color:#1E40AF'
+                    ];
+                    $paymentStatus = $order['payment_status'] ?? 'pending';
+                    $paymentStyle = $paymentStatusColors[$paymentStatus] ?? $paymentStatusColors['pending'];
+                    ?>
+                    <span style="<?= $paymentStyle ?>;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:600;">
+                        <?= ucfirst(str_replace('_', ' ', $paymentStatus)) ?>
+                    </span>
+                </div>
+            </div>
+            
             <?php if (!empty($order['tracking_number'])): ?>
             <div>
                 <div style="color:#6B7280;font-size:13px;margin-bottom:4px;">Tracking Number</div>
@@ -75,7 +111,23 @@
                 <div style="color:#111827;"><?= html_escape($order['courier']) ?></div>
             </div>
             <?php endif; ?>
+            
+            <?php if (!empty($order['bank_reference'])): ?>
+            <div>
+                <div style="color:#6B7280;font-size:13px;margin-bottom:4px;">Bank Reference Number</div>
+                <div style="color:#111827;font-family:monospace;font-weight:600;"><?= html_escape($order['bank_reference']) ?></div>
+            </div>
+            <?php endif; ?>
         </div>
+
+        <?php if (!empty($order['payment_proof'])): ?>
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid #f3f4f6;">
+            <h4 style="margin:0 0 12px;font-size:16px;font-weight:600;color:#111827;">Payment Proof</h4>
+            <a href="<?= site_url($order['payment_proof']) ?>" target="_blank" style="display:inline-block;padding:10px 20px;background:#4F46E5;color:#fff;border-radius:8px;text-decoration:none;font-weight:500;">
+                View Proof of Payment
+            </a>
+        </div>
+        <?php endif; ?>
 
         <?php if (!empty($shipping)): ?>
         <div style="margin-top:24px;padding-top:24px;border-top:1px solid #f3f4f6;">

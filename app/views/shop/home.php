@@ -1097,7 +1097,7 @@
                                 <span class="user-dropdown-badge">customer</span>
                             </div>
                             <div class="user-dropdown-menu">
-                                <a href="#" class="user-dropdown-item">
+                                <a href="<?= site_url('my-orders') ?>" class="user-dropdown-item">
                                     <svg class="user-dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                                     </svg>

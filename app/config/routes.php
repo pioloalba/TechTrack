@@ -151,10 +151,12 @@ $router->get('/googleauth/callback', 'GoogleAuth::callback');
 $router->get('/googleauth/disconnect', 'GoogleAuth::disconnect');
 
 // PayMongo Payment Integration
-$router->match('/payment/create-intent', 'Payment::create_intent', ['post']);
-$router->match('/payment/create-source', 'Payment::create_source', ['post']);
+$router->match('/payment/create-intent', 'Payment::create_intent', ['get', 'post']);
+$router->match('/payment/create-source', 'Payment::create_source', ['get', 'post']);
 $router->match('/payment/create-method', 'Payment::create_payment_method', ['post']);
 $router->match('/payment/attach-intent', 'Payment::attach_intent', ['post']);
+$router->match('/payment/bank-transfer', 'Payment::bank_transfer', ['get']);
+$router->match('/payment/confirm-bank-transfer', 'Payment::confirm_bank_transfer', ['post']);
 $router->get('/payment/success', 'Payment::success');
 $router->get('/payment/cancel', 'Payment::cancel');
 $router->match('/payment/webhook', 'Payment::webhook', ['post']);
