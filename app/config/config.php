@@ -143,7 +143,7 @@ $config['csrf_exclude_uris']        = ['shop/add_to_cart'];
 | Note: This will NOT disable or override the LavaLust-specific
 |	autoloading (app/config/autoload.php)
 */
-$config['composer_autoload']        = FALSE;
+$config['composer_autoload']        = ROOT_DIR . 'vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------

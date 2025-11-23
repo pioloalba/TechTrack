@@ -1,0 +1,1 @@
+ALTER TABLE customers ADD COLUMN google_id VARCHAR(255) NULL UNIQUE AFTER email;

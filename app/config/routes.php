@@ -145,6 +145,20 @@ $router->get('/shop/register', 'CustomerAuth::register');
 $router->match('/shop/register', 'CustomerAuth::do_register', ['post']);
 $router->get('/shop/logout', 'CustomerAuth::logout');
 
+// Google OAuth for customers
+$router->get('/googleauth/login', 'GoogleAuth::login');
+$router->get('/googleauth/callback', 'GoogleAuth::callback');
+$router->get('/googleauth/disconnect', 'GoogleAuth::disconnect');
+
+// PayMongo Payment Integration
+$router->match('/payment/create-intent', 'Payment::create_intent', ['post']);
+$router->match('/payment/create-source', 'Payment::create_source', ['post']);
+$router->match('/payment/create-method', 'Payment::create_payment_method', ['post']);
+$router->match('/payment/attach-intent', 'Payment::attach_intent', ['post']);
+$router->get('/payment/success', 'Payment::success');
+$router->get('/payment/cancel', 'Payment::cancel');
+$router->match('/payment/webhook', 'Payment::webhook', ['post']);
+
 // API endpoints for React frontend
 $router->group('/api', function() use ($router) {
 	$router->get('/products', 'ApiProducts::index');

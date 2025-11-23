@@ -17,3 +17,7 @@ runtime/*
 *.stTheme.cache
 *.sublime-workspace
 *.sublime-project
+# Google OAuth credentials
+client_secret_*.json
+app/config/google_oauth.php
+app/config/paymongo.php
