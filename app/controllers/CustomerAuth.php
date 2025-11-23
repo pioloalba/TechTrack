@@ -59,14 +59,26 @@ class CustomerAuth extends Controller
             return $this->respond(false, $this->rateLimiter->getLimitMessage($identifier, 'customer_login'), 'shop/login');
         }
 
-        // Use users table for customers
-        $stmt = $this->db->raw('SELECT * FROM users WHERE email = ? AND role = ? LIMIT 1', [$email, 'Customer']);
-        $user = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
-        if (!$user) {
+        // Query customers table with password from customer_auth table
+        $stmt = $this->db->raw('
+            SELECT c.*, ca.password 
+            FROM customers c
+            LEFT JOIN customer_auth ca ON c.id = ca.customer_id
+            WHERE c.email = ? 
+            LIMIT 1
+        ', [$email]);
+        $customer = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+        
+        if (!$customer) {
             return $this->respond(false, 'Account not found. Please sign up.', 'shop/login');
         }
 
-        $hash = $user['password'] ?? '';
+        // Check if customer has password set
+        if (empty($customer['password'])) {
+            return $this->respond(false, 'Account found but no password set. Please contact support.', 'shop/login');
+        }
+
+        $hash = $customer['password'];
         $ok = false;
         if (strlen($hash) >= 60 && (str_starts_with($hash, '$2y$') || str_starts_with($hash, '$argon2'))) {
             $ok = password_verify($password, $hash);
@@ -86,10 +98,23 @@ class CustomerAuth extends Controller
         
         $this->rateLimiter->clear($identifier, 'customer_login');
 
+        $customer_id = (int)$customer['id'];
+        $session_id = $this->session->session_id ?? session_id();
+        
+        // Load models for cart/wishlist migration
+        $this->call->model(['CartModel', 'WishlistModel']);
+        
+        // Migrate guest cart to customer cart
+        $this->CartModel->migrateGuestCart($session_id, $customer_id);
+        
+        // Migrate guest wishlist to customer wishlist
+        $this->WishlistModel->migrateGuestWishlist($session_id, $customer_id);
+
         $this->session->set_userdata('customer', [
-            'id' => (int)$user['id'],
-            'name' => $user['name'] ?? '',
-            'email' => $user['email'] ?? '',
+            'id' => $customer_id,
+            'name' => $customer['name'] ?? '',
+            'email' => $customer['email'] ?? '',
+            'phone' => $customer['phone'] ?? '',
             'role' => 'Customer',
         ]);
 
@@ -152,21 +177,35 @@ class CustomerAuth extends Controller
             return $this->respond(false, 'Password must contain at least one number.', 'shop/register');
         }
 
-        // Check existing user
-        $existsStmt = $this->db->raw('SELECT 1 FROM users WHERE email = ? LIMIT 1', [$email]);
+        // Check existing customer
+        $existsStmt = $this->db->raw('SELECT 1 FROM customers WHERE email = ? LIMIT 1', [$email]);
         $exists = $existsStmt ? $existsStmt->fetch(PDO::FETCH_ASSOC) : null;
         if ($exists) {
             return $this->respond(false, 'Email already in use. Try logging in.', 'shop/register');
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $this->db->raw('INSERT INTO users (name, email, password, role, created_at) VALUES (?, ?, ?, ?, NOW())', [$name, $email, $hash, 'Customer']);
+        
+        // Insert into customers table
+        $this->db->raw('
+            INSERT INTO customers (name, email, phone, total_orders, total_spent, is_vip, created_at) 
+            VALUES (?, ?, NULL, 0, 0.00, 0, NOW())
+        ', [$name, $email]);
+        
+        $customer_id = (int)$this->db->last_id();
+        
+        // Insert password into customer_auth table
+        $this->db->raw('
+            INSERT INTO customer_auth (customer_id, password, created_at, updated_at) 
+            VALUES (?, ?, NOW(), NOW())
+        ', [$customer_id, $hash]);
 
         // Auto-login after registration
         $this->session->set_userdata('customer', [
-            'id' => (int)$this->db->last_id(),
+            'id' => $customer_id,
             'name' => $name,
             'email' => $email,
+            'phone' => null,
             'role' => 'Customer',
         ]);
 

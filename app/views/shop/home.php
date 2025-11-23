@@ -108,6 +108,7 @@
             padding: 0 24px;
             display: flex;
             gap: 32px;
+            align-items: center;
         }
 
         .nav-link {
@@ -117,11 +118,124 @@
             font-weight: 500;
             border-bottom: 2px solid transparent;
             transition: all 0.2s;
+            display: inline-block;
         }
 
         .nav-link:hover, .nav-link.active {
             color: #3B82F6;
             border-bottom-color: #3B82F6;
+        }
+
+        /* Products Mega Menu */
+        .products-dropdown {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .products-dropdown .nav-link {
+            position: relative;
+            padding: 16px 0;
+        }
+
+        .mega-menu.active + .nav-link,
+        .products-dropdown:hover .nav-link {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+
+        .mega-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #E5E7EB;
+            border-top: 3px solid #3B82F6;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 800px;
+            max-width: 1200px;
+            margin-top: -2px;
+        }
+
+        .mega-menu.active {
+            display: block;
+        }
+
+        .mega-menu-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            max-height: 600px;
+        }
+
+        .mega-menu-sidebar {
+            background: #F9FAFB;
+            border-right: 1px solid #E5E7EB;
+            padding: 20px 0;
+        }
+
+        .mega-menu-category {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .mega-menu-category:hover {
+            background: #fff;
+            color: #3B82F6;
+        }
+
+        .mega-menu-category.active {
+            background: #fff;
+            color: #3B82F6;
+            border-left: 3px solid #3B82F6;
+            padding-left: 21px;
+        }
+
+        .mega-menu-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .component-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            color: #374151;
+            display: block;
+        }
+
+        .component-item:hover {
+            background: #F3F4F6;
+            border-color: #E5E7EB;
+            color: #3B82F6;
+            transform: translateX(4px);
+        }
+
+        .component-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .component-count {
+            font-size: 13px;
+            color: #6B7280;
         }
 
         /* Hero Carousel */
@@ -130,6 +244,67 @@
             color: #fff;
             position: relative;
             overflow: hidden;
+        }
+
+        .hero-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .hero-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .hero-arrow-left {
+            left: 24px;
+        }
+
+        .hero-arrow-right {
+            right: 24px;
+        }
+
+        .hero-indicators {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .hero-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hero-indicator.active {
+            background: #fff;
+            width: 32px;
+            border-radius: 6px;
+        }
+
+        .hero-indicator:hover {
+            background: rgba(255, 255, 255, 0.7);
         }
 
         .hero-container {
@@ -344,6 +519,46 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
             transform: translateY(-4px);
             border-color: #3B82F6;
+        }
+
+        /* Wishlist Heart Button */
+        .wishlist-heart-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            font-size: 20px;
+        }
+
+        .wishlist-heart-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .wishlist-heart-btn.active {
+            animation: heartBeat 0.3s ease-in-out;
+        }
+
+        .wishlist-heart-btn.in-wishlist {
+            background: #FEE2E2;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1.1); }
+            75% { transform: scale(1.2); }
         }
 
         .product-image {
@@ -852,8 +1067,11 @@
                     💳 Cashier
                 </button>
                 <a href="#" id="openLocation">📍 Location</a>
-                <a href="#">🚚 Delivery</a>
-                <a href="#">❤️</a>
+                <a href="<?= site_url('my-orders') ?>">🚚 Delivery</a>
+                <a href="<?= site_url('wishlist') ?>" id="wishlistBtn" style="position: relative;">
+                    ❤️
+                    <span id="wishlistBadge" style="display:none;position:absolute;top:-8px;right:-8px;background:#EF4444;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">0</span>
+                </a>
                 <a href="<?= site_url('checkout') ?>" style="position:relative;">
                     🛒
                     <span id="cartBadge" style="display:none;position:absolute;top:-8px;right:-8px;background:#EF4444;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;">0</span>
@@ -961,7 +1179,216 @@
     <nav class="nav">
         <div class="nav-container">
             <a href="<?= site_url('shop') ?>" class="nav-link" data-nav="home">Home</a>
-            <a href="<?= site_url('shop') ?>" class="nav-link" data-nav="products">Products</a>
+            
+            <!-- Products Dropdown -->
+            <div class="products-dropdown">
+                <a href="#" class="nav-link" data-nav="products" id="productsToggle">Products</a>
+                
+                <!-- Mega Menu -->
+                <div class="mega-menu" id="productsMegaMenu">
+                    <div class="mega-menu-content">
+                        <!-- Sidebar Categories -->
+                        <div class="mega-menu-sidebar">
+                            <div class="mega-menu-category active" data-category="component">
+                                <span>Component</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mega-menu-category" data-category="peripherals">
+                                <span>Peripherals</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mega-menu-category" data-category="accessories">
+                                <span>Accessories</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mega-menu-category" data-category="pc-furniture">
+                                <span>PC Furnitures</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mega-menu-category" data-category="os-software">
+                                <span>OS & Softwares</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mega-menu-category" data-category="laptops">
+                                <span>Laptops And Mobile Devices</span>
+                                <span>›</span>
+                            </div>
+                            <div class="mega-menu-category" data-category="desktop">
+                                <span>Desktop</span>
+                                <span>›</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Body Content -->
+                        <div class="mega-menu-body">
+                            <!-- Component Category -->
+                            <div class="component-grid" data-category-content="component">
+                                <a href="<?= site_url('shop?category=Chassis Fan') ?>" class="component-item">
+                                    <div class="component-name">Chassis Fan</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=PC Case') ?>" class="component-item">
+                                    <div class="component-name">PC Case</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=CPU Cooling') ?>" class="component-item">
+                                    <div class="component-name">CPU Cooling</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Power Supply') ?>" class="component-item">
+                                    <div class="component-name">Power Supply</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Graphics Card') ?>" class="component-item">
+                                    <div class="component-name">Graphics Card</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Processor AMD') ?>" class="component-item">
+                                    <div class="component-name">Processor AMD</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Hard Disk') ?>" class="component-item">
+                                    <div class="component-name">Hard Disk</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Processor INTEL') ?>" class="component-item">
+                                    <div class="component-name">Processor INTEL</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Memory') ?>" class="component-item">
+                                    <div class="component-name">Memory</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Processor Tray') ?>" class="component-item">
+                                    <div class="component-name">Processor Tray</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Motherboard') ?>" class="component-item">
+                                    <div class="component-name">Motherboard</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Solid State Drive') ?>" class="component-item">
+                                    <div class="component-name">Solid State Drive</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                            
+                            <!-- Peripherals Category -->
+                            <div class="component-grid" data-category-content="peripherals" style="display:none;">
+                                <a href="<?= site_url('shop?category=Keyboard') ?>" class="component-item">
+                                    <div class="component-name">Keyboard</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Mouse') ?>" class="component-item">
+                                    <div class="component-name">Mouse</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Headset') ?>" class="component-item">
+                                    <div class="component-name">Headset</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Monitor') ?>" class="component-item">
+                                    <div class="component-name">Monitor</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Webcam') ?>" class="component-item">
+                                    <div class="component-name">Webcam</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Speaker') ?>" class="component-item">
+                                    <div class="component-name">Speaker</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                            
+                            <!-- Accessories Category -->
+                            <div class="component-grid" data-category-content="accessories" style="display:none;">
+                                <a href="<?= site_url('shop?category=Mouse Pad') ?>" class="component-item">
+                                    <div class="component-name">Mouse Pad</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Cable') ?>" class="component-item">
+                                    <div class="component-name">Cables</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=USB Hub') ?>" class="component-item">
+                                    <div class="component-name">USB Hub</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Cooling Pad') ?>" class="component-item">
+                                    <div class="component-name">Cooling Pad</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                            
+                            <!-- PC Furniture Category -->
+                            <div class="component-grid" data-category-content="pc-furniture" style="display:none;">
+                                <a href="<?= site_url('shop?category=Gaming Chair') ?>" class="component-item">
+                                    <div class="component-name">Gaming Chair</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Gaming Desk') ?>" class="component-item">
+                                    <div class="component-name">Gaming Desk</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Monitor Arm') ?>" class="component-item">
+                                    <div class="component-name">Monitor Arm</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                            
+                            <!-- OS & Software Category -->
+                            <div class="component-grid" data-category-content="os-software" style="display:none;">
+                                <a href="<?= site_url('shop?category=Windows') ?>" class="component-item">
+                                    <div class="component-name">Windows OS</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Office') ?>" class="component-item">
+                                    <div class="component-name">Microsoft Office</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Antivirus') ?>" class="component-item">
+                                    <div class="component-name">Antivirus</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                            
+                            <!-- Laptops Category -->
+                            <div class="component-grid" data-category-content="laptops" style="display:none;">
+                                <a href="<?= site_url('shop/laptops') ?>" class="component-item">
+                                    <div class="component-name">Gaming Laptops</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Business Laptop') ?>" class="component-item">
+                                    <div class="component-name">Business Laptops</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Ultrabook') ?>" class="component-item">
+                                    <div class="component-name">Ultrabooks</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                            
+                            <!-- Desktop Category -->
+                            <div class="component-grid" data-category-content="desktop" style="display:none;">
+                                <a href="<?= site_url('shop/desktops') ?>" class="component-item">
+                                    <div class="component-name">Gaming Desktop</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=Workstation') ?>" class="component-item">
+                                    <div class="component-name">Workstation</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                                <a href="<?= site_url('shop?category=All-in-One') ?>" class="component-item">
+                                    <div class="component-name">All-in-One PC</div>
+                                    <div class="component-count">Browse products</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <a href="<?= site_url('shop/desktops') ?>" class="nav-link" data-nav="desktop">Desktop</a>
             <a href="<?= site_url('shop/laptops') ?>" class="nav-link" data-nav="laptop">Laptop</a>
             <a href="<?= site_url('shop/build-pc') ?>" class="nav-link" data-nav="pc">Build a PC</a>
@@ -975,14 +1402,34 @@
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
-                <h1>Gaming Desktop PCs</h1>
-                <p>High-Performance Gaming Systems</p>
-                <div class="hero-price">Starting at ₱45,999</div>
-                <a href="#" class="hero-btn">Pre-Order Now</a>
+                <h1 id="heroTitle">Gaming Desktop PCs</h1>
+                <p id="heroSubtitle">High-Performance Gaming Systems</p>
+                <div class="hero-price" id="heroPrice">Starting at ₱45,999</div>
+                <a href="#" class="hero-btn" id="heroBtn">Pre-Order Now</a>
             </div>
             <div class="hero-image">
-                <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Gaming+Setup" alt="Gaming PC">
+                <img id="heroImage" src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&h=400&fit=crop" alt="Gaming PC">
             </div>
+        </div>
+        
+        <!-- Navigation Arrows -->
+        <button class="hero-arrow hero-arrow-left" onclick="previousSlide()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="hero-arrow hero-arrow-right" onclick="nextSlide()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+        
+        <!-- Slide Indicators -->
+        <div class="hero-indicators">
+            <span class="hero-indicator active" onclick="goToSlide(0)"></span>
+            <span class="hero-indicator" onclick="goToSlide(1)"></span>
+            <span class="hero-indicator" onclick="goToSlide(2)"></span>
+            <span class="hero-indicator" onclick="goToSlide(3)"></span>
         </div>
     </section>
 
@@ -1037,15 +1484,21 @@
     </section>
 
     <?php
-    // Filter products by category
+    // Filter products by category (checking for exact category match or containing the word)
     $accessoriesProducts = array_filter($products ?? [], function($p) {
-        return stripos($p['category'] ?? '', 'Accessor') !== false;
+        $category = strtolower($p['category'] ?? '');
+        return stripos($category, 'accessories') !== false || 
+               stripos($category, 'peripherals') !== false ||
+               stripos($category, 'audio') !== false ||
+               stripos($category, 'monitors') !== false;
     });
     $laptopProducts = array_filter($products ?? [], function($p) {
-        return stripos($p['category'] ?? '', 'Laptop') !== false;
+        $category = strtolower($p['category'] ?? '');
+        return stripos($category, 'laptop') !== false;
     });
     $desktopProducts = array_filter($products ?? [], function($p) {
-        return stripos($p['category'] ?? '', 'Desktop') !== false;
+        $category = strtolower($p['category'] ?? '');
+        return stripos($category, 'desktop') !== false;
     });
     ?>
 
@@ -1063,7 +1516,8 @@
                 $img = $product_images[$product['id']] ?? null;
                 $count++;
             ?>
-                <div class="product-card">
+                <div class="product-card" data-product-id="<?= $product['id'] ?>">
+                    <button class="wishlist-heart-btn" onclick="toggleWishlist(<?= $product['id'] ?>, '<?= html_escape($product['name']) ?>')"><span class="heart-icon">🤍</span></button>
                     <?php if ($img): ?>
                         <img src="<?= html_escape($img) ?>" alt="<?= html_escape($product['name']) ?>" class="product-image">
                     <?php else: ?>
@@ -1107,7 +1561,8 @@
                 $img = $product_images[$product['id']] ?? null;
                 $count++;
             ?>
-                <div class="product-card">
+                <div class="product-card" data-product-id="<?= $product['id'] ?>">
+                    <button class="wishlist-heart-btn" onclick="toggleWishlist(<?= $product['id'] ?>, '<?= html_escape($product['name']) ?>')"><span class="heart-icon">🤍</span></button>
                     <?php if ($img): ?>
                         <img src="<?= html_escape($img) ?>" alt="<?= html_escape($product['name']) ?>" class="product-image">
                     <?php else: ?>
@@ -1151,7 +1606,8 @@
                 $img = $product_images[$product['id']] ?? null;
                 $count++;
             ?>
-                <div class="product-card">
+                <div class="product-card" data-product-id="<?= $product['id'] ?>">
+                    <button class="wishlist-heart-btn" onclick="toggleWishlist(<?= $product['id'] ?>, '<?= html_escape($product['name']) ?>')"><span class="heart-icon">🤍</span></button>
                     <?php if ($img): ?>
                         <img src="<?= html_escape($img) ?>" alt="<?= html_escape($product['name']) ?>" class="product-image">
                     <?php else: ?>
@@ -1402,6 +1858,161 @@
     </footer>
 
         <script>
+        // Hero Carousel
+        const heroSlides = [
+            {
+                title: 'Gaming Desktop PCs',
+                subtitle: 'High-Performance Gaming Systems',
+                price: 'Starting at ₱45,999',
+                image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&h=400&fit=crop',
+                link: '#'
+            },
+            {
+                title: 'Professional Workstations',
+                subtitle: 'Power for Creative Professionals',
+                price: 'Starting at ₱65,999',
+                image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=600&h=400&fit=crop',
+                link: '#'
+            },
+            {
+                title: 'Custom PC Builder',
+                subtitle: 'Build Your Dream Setup',
+                price: 'Configure Now',
+                image: 'https://images.unsplash.com/photo-1591238372338-a96c9eb9afb1?w=600&h=400&fit=crop',
+                link: '<?= site_url('shop/build-pc') ?>'
+            },
+            {
+                title: 'Gaming Peripherals',
+                subtitle: 'Complete Your Gaming Setup',
+                price: 'Starting at ₱2,499',
+                image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600&h=400&fit=crop',
+                link: '#'
+            }
+        ];
+
+        let currentSlide = 0;
+
+        function updateSlide() {
+            const slide = heroSlides[currentSlide];
+            document.getElementById('heroTitle').textContent = slide.title;
+            document.getElementById('heroSubtitle').textContent = slide.subtitle;
+            document.getElementById('heroPrice').textContent = slide.price;
+            document.getElementById('heroImage').src = slide.image;
+            document.getElementById('heroBtn').href = slide.link;
+            
+            // Update indicators
+            document.querySelectorAll('.hero-indicator').forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % heroSlides.length;
+            updateSlide();
+        }
+
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + heroSlides.length) % heroSlides.length;
+            updateSlide();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlide();
+        }
+
+        // Auto-advance slides every 5 seconds
+        setInterval(nextSlide, 5000);
+
+        // Products Mega Menu functionality
+        (function() {
+            const productsToggle = document.getElementById('productsToggle');
+            const megaMenu = document.getElementById('productsMegaMenu');
+            const menuCategories = document.querySelectorAll('.mega-menu-category');
+            let menuTimeout;
+
+            // Toggle mega menu on click
+            if (productsToggle) {
+                productsToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isActive = megaMenu.classList.contains('active');
+                    
+                    if (isActive) {
+                        megaMenu.classList.remove('active');
+                    } else {
+                        megaMenu.classList.add('active');
+                    }
+                });
+            }
+
+            // Switch between categories
+            menuCategories.forEach(category => {
+                category.addEventListener('click', function() {
+                    // Remove active class from all categories
+                    menuCategories.forEach(cat => cat.classList.remove('active'));
+                    
+                    // Add active class to clicked category
+                    this.classList.add('active');
+                    
+                    // Get category name
+                    const categoryName = this.getAttribute('data-category');
+                    
+                    // Hide all category contents
+                    document.querySelectorAll('[data-category-content]').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    // Show selected category content
+                    const selectedContent = document.querySelector(`[data-category-content="${categoryName}"]`);
+                    if (selectedContent) {
+                        selectedContent.style.display = 'grid';
+                    }
+                });
+            });
+
+            // Close mega menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!megaMenu.contains(e.target) && e.target !== productsToggle) {
+                    megaMenu.classList.remove('active');
+                }
+            });
+
+            // Prevent mega menu from closing when clicking inside
+            megaMenu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Optional: Show/hide on hover (desktop only)
+            if (window.innerWidth > 768) {
+                const productsDropdown = document.querySelector('.products-dropdown');
+                
+                if (productsDropdown) {
+                    productsDropdown.addEventListener('mouseenter', function() {
+                        clearTimeout(menuTimeout);
+                        megaMenu.classList.add('active');
+                    });
+
+                    productsDropdown.addEventListener('mouseleave', function() {
+                        menuTimeout = setTimeout(() => {
+                            megaMenu.classList.remove('active');
+                        }, 200);
+                    });
+
+                    megaMenu.addEventListener('mouseenter', function() {
+                        clearTimeout(menuTimeout);
+                    });
+
+                    megaMenu.addEventListener('mouseleave', function() {
+                        menuTimeout = setTimeout(() => {
+                            megaMenu.classList.remove('active');
+                        }, 200);
+                    });
+                }
+            }
+        })();
+
         (function(){
             // Location Modal
             const modal = document.getElementById('locationModal');
@@ -1564,33 +2175,6 @@
                 });
             });
 
-            // Simple notification function
-            function showNotification(message, type = 'info') {
-                const notification = document.createElement('div');
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 16px 24px;
-                    background: ${type === 'success' ? '#10B981' : '#3B82F6'};
-                    color: white;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    z-index: 10000;
-                    font-size: 14px;
-                    font-weight: 500;
-                    animation: slideIn 0.3s ease-out;
-                `;
-                notification.textContent = message;
-                
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.style.animation = 'slideOut 0.3s ease-out';
-                    setTimeout(() => notification.remove(), 300);
-                }, 3000);
-            }
-
             // Add CSS animations
             const style = document.createElement('style');
             style.textContent = `
@@ -1605,6 +2189,123 @@
             `;
             document.head.appendChild(style);
         })();
+
+        // Simple notification function (global scope)
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? '#10B981' : type === 'info' ? '#3B82F6' : '#EF4444'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-size: 14px;
+                font-weight: 500;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Wishlist functionality
+        let wishlistItems = [];
+        const wishlistBadge = document.getElementById('wishlistBadge');
+
+        // Load wishlist on page load
+        function loadWishlist() {
+            fetch('<?= site_url('shop/get-wishlist') ?>')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        wishlistItems = data.wishlist || [];
+                        updateWishlistUI();
+                    }
+                })
+                .catch(err => console.error('Error loading wishlist:', err));
+        }
+
+        // Update wishlist UI
+        function updateWishlistUI() {
+            // Update badge
+            if (wishlistItems.length > 0) {
+                wishlistBadge.textContent = wishlistItems.length;
+                wishlistBadge.style.display = 'flex';
+            } else {
+                wishlistBadge.style.display = 'none';
+            }
+
+            // Update heart icons
+            document.querySelectorAll('.wishlist-heart-btn').forEach(btn => {
+                const card = btn.closest('.product-card');
+                const productId = parseInt(card.getAttribute('data-product-id'));
+                const heartIcon = btn.querySelector('.heart-icon');
+                
+                if (wishlistItems.includes(productId)) {
+                    heartIcon.textContent = '❤️';
+                    btn.classList.add('in-wishlist');
+                } else {
+                    heartIcon.textContent = '🤍';
+                    btn.classList.remove('in-wishlist');
+                }
+            });
+        }
+
+        // Toggle wishlist
+        function toggleWishlist(productId, productName) {
+            const isInWishlist = wishlistItems.includes(productId);
+            const url = isInWishlist 
+                ? '<?= site_url('shop/remove-from-wishlist') ?>'
+                : '<?= site_url('shop/add-to-wishlist') ?>';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    product_id: productId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (isInWishlist) {
+                        wishlistItems = wishlistItems.filter(id => id !== productId);
+                        showNotification('Removed from wishlist', 'info');
+                    } else {
+                        wishlistItems.push(productId);
+                        showNotification('Added to wishlist: ' + productName, 'success');
+                        
+                        // Add heartbeat animation
+                        const btn = document.querySelector(`.product-card[data-product-id="${productId}"] .wishlist-heart-btn`);
+                        if (btn) {
+                            btn.classList.add('active');
+                            setTimeout(() => btn.classList.remove('active'), 300);
+                        }
+                    }
+                    updateWishlistUI();
+                } else {
+                    alert(data.message || 'Failed to update wishlist');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+
+        // Load wishlist on page load
+        loadWishlist();
 
         // Admin and Cashier button handlers
         document.addEventListener('DOMContentLoaded', function() {

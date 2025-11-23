@@ -18,8 +18,9 @@ class AdminOrders extends AdminBase
         $ordersQuery = $this->db->raw("
             SELECT 
                 o.*,
-                c.name as customer_name,
-                c.email as customer_email
+                COALESCE(c.name, o.customer_name) as customer_name,
+                COALESCE(c.email, o.customer_email) as customer_email,
+                COALESCE(c.phone, o.customer_phone) as customer_phone
             FROM orders o
             LEFT JOIN customers c ON o.customer_id = c.id
             ORDER BY o.created_at DESC

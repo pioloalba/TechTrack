@@ -98,6 +98,7 @@ $router->group('/admin', function() use ($router) {
 	$router->get('/reports', 'AdminReports::index');
 	$router->get('/reports/export_pdf', 'AdminReports::export_pdf');
 	$router->get('/alerts', 'AdminAlerts::index');
+	$router->get('/alerts/get-notifications', 'AdminAlerts::getNotifications');
 	$router->get('/settings', 'AdminSettings::index');
 	$router->match('/settings/update', 'AdminSettings::update', ['post']);
 
@@ -117,6 +118,8 @@ $router->get('/product/{id}', 'Shop::product');
 $router->get('/checkout', 'Shop::checkout');
 $router->post('/checkout/place-order', 'Shop::place_order');
 $router->get('/track/{order_id}', 'Shop::track_order');
+$router->get('/my-orders', 'Shop::my_orders');
+$router->get('/wishlist', 'Shop::wishlist');
 
 // Cart operations
 $router->match('/shop/add-to-cart', 'Shop::add_to_cart', ['post']);
@@ -129,6 +132,11 @@ $router->match('/shop/clear-cart', 'Shop::clear_cart', ['post']);
 
 // Save customer location (AJAX)
 $router->match('/shop/save-location', 'Shop::save_location', ['post']);
+
+// Wishlist operations
+$router->match('/shop/add-to-wishlist', 'Shop::add_to_wishlist', ['post']);
+$router->match('/shop/remove-from-wishlist', 'Shop::remove_from_wishlist', ['post']);
+$router->match('/shop/get-wishlist', 'Shop::get_wishlist', ['get']);
 
 // Customer authentication (shop)
 $router->get('/shop/login', 'CustomerAuth::login');

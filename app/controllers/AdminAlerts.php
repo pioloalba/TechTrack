@@ -44,6 +44,79 @@ class AdminAlerts extends AdminBase
         $this->call->view('admin/layouts/topbar', $data);
         $this->call->view('admin/alerts/index', $data);
     }
+
+    public function getNotifications()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            // Get critical stock items (<=5)
+            $criticalQuery = $this->db->raw("
+                SELECT id, name, stock 
+                FROM products 
+                WHERE stock > 0 AND stock <= 5
+                ORDER BY stock ASC
+                LIMIT 3
+            ");
+            $criticalItems = $criticalQuery->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Get low stock items (6-10)
+            $lowStockQuery = $this->db->raw("
+                SELECT id, name, stock 
+                FROM products 
+                WHERE stock > 5 AND stock <= 10
+                ORDER BY stock ASC
+                LIMIT 3
+            ");
+            $lowStockItems = $lowStockQuery->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Get total count for badge
+            $totalQuery = $this->db->raw("
+                SELECT COUNT(*) as count 
+                FROM products 
+                WHERE stock > 0 AND stock <= 10
+            ");
+            $totalRow = $totalQuery->fetch(PDO::FETCH_ASSOC);
+            $totalCount = (int)$totalRow['count'];
+            
+            $notifications = [];
+            
+            // Add critical items
+            foreach ($criticalItems as $item) {
+                $notifications[] = [
+                    'id' => $item['id'],
+                    'type' => 'critical',
+                    'title' => 'Critical Stock Alert',
+                    'message' => $item['name'] . ' - Only ' . $item['stock'] . ' units left!',
+                    'product_id' => $item['id']
+                ];
+            }
+            
+            // Add low stock items
+            foreach ($lowStockItems as $item) {
+                $notifications[] = [
+                    'id' => $item['id'],
+                    'type' => 'warning',
+                    'title' => 'Low Stock Warning',
+                    'message' => $item['name'] . ' - ' . $item['stock'] . ' units remaining',
+                    'product_id' => $item['id']
+                ];
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'count' => $totalCount,
+                'notifications' => $notifications
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
 }
 
 ?>

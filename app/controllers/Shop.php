@@ -8,12 +8,24 @@ class Shop extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->call->model(['ProductModel','OrderModel','CustomerModel']);
+        $this->call->model(['ProductModel','OrderModel','CustomerModel','CartModel','WishlistModel']);
         $this->call->library(['session']);
         
         // Load cache helper
         $this->call->helper(['cache']);
         $this->cache = new SimpleCache();
+    }
+    
+    /**
+     * Get customer ID and session ID for cart/wishlist
+     */
+    private function getIdentifiers()
+    {
+        $customer = $this->session->userdata('customer');
+        $customer_id = ($customer && isset($customer['id'])) ? (int)$customer['id'] : null;
+        $session_id = $this->session->session_id ?? session_id();
+        
+        return ['customer_id' => $customer_id, 'session_id' => $session_id];
     }
 
     public function index()
@@ -27,34 +39,41 @@ class Shop extends Controller
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $perPage = 12; // 12 products per page
         
-        // Create cache key
-        $cacheKey = 'products_page_' . $page . '_search_' . md5($search) . '_cat_' . md5($category);
-        
-        // Try to get from cache (5 minutes TTL)
-        $cachedData = $this->cache->get($cacheKey);
-        
-        if ($cachedData !== null) {
-            $data = $cachedData;
+        // If no search/category filter, load all products for home page sections
+        if (empty($search) && empty($category)) {
+            // Load all products for home page display
+            $data['products'] = $this->ProductModel->getAllWithImages();
+            $data['pagination'] = null;
         } else {
-            // Count total products
-            $totalProducts = $this->ProductModel->countProducts($search, $category);
+            // Create cache key
+            $cacheKey = 'products_page_' . $page . '_search_' . md5($search) . '_cat_' . md5($category);
             
-            // Create paginator
-            $paginator = new Paginator($totalProducts, $perPage, $page);
+            // Try to get from cache (5 minutes TTL)
+            $cachedData = $this->cache->get($cacheKey);
             
-            // Get paginated products with images (optimized query - no N+1)
-            $data['products'] = $this->ProductModel->getPaginatedWithImages(
-                $paginator->getLimit(),
-                $paginator->getOffset(),
-                $search,
-                $category
-            );
-            
-            // Pagination data
-            $data['pagination'] = $paginator->getPaginationData();
-            
-            // Cache for 5 minutes
-            $this->cache->set($cacheKey, $data, 300);
+            if ($cachedData !== null) {
+                $data = $cachedData;
+            } else {
+                // Count total products
+                $totalProducts = $this->ProductModel->countProducts($search, $category);
+                
+                // Create paginator
+                $paginator = new Paginator($totalProducts, $perPage, $page);
+                
+                // Get paginated products with images (optimized query - no N+1)
+                $data['products'] = $this->ProductModel->getPaginatedWithImages(
+                    $paginator->getLimit(),
+                    $paginator->getOffset(),
+                    $search,
+                    $category
+                );
+                
+                // Pagination data
+                $data['pagination'] = $paginator->getPaginationData();
+                
+                // Cache for 5 minutes
+                $this->cache->set($cacheKey, $data, 300);
+            }
         }
         
         $data['search_query'] = $search;
@@ -107,8 +126,23 @@ class Shop extends Controller
 
     public function checkout()
     {
-        // Get cart from session
-        $cart = $this->session->userdata('shopping_cart') ?? [];
+        // Get cart from database
+        $ids = $this->getIdentifiers();
+        $cartItems = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
+        
+        // Format cart items
+        $cart = [];
+        foreach ($cartItems as $item) {
+            $cart[] = [
+                'id' => $item['id'],
+                'product_id' => $item['product_id'],
+                'product_name' => $item['product_name'],
+                'price' => (float)$item['price'],
+                'quantity' => (int)$item['quantity'],
+                'subtotal' => (float)$item['price'] * (int)$item['quantity'],
+                'image' => $item['image']
+            ];
+        }
         
         // Calculate totals
         $subtotal = 0;
@@ -164,8 +198,21 @@ class Shop extends Controller
         $tax = round($subtotal * $tax_rate, 2);
         $total = $subtotal + $tax;
 
+        // Get customer info from session if available
+        $customer = $this->session->userdata('customer');
+        $customer_id = ($customer && isset($customer['id'])) ? $customer['id'] : null;
+        
+        // Save guest email/phone to session for order tracking
+        if (!empty($payload['customer_email'])) {
+            $this->session->set_userdata('guest_email', $payload['customer_email']);
+        }
+        if (!empty($payload['customer_phone'])) {
+            $this->session->set_userdata('guest_phone', $payload['customer_phone']);
+        }
+        
         // Insert order
         $order = [
+            'customer_id' => $customer_id,
             'customer_name' => $payload['customer_name'] ?? 'Guest',
             'customer_email' => $payload['customer_email'] ?? null,
             'customer_phone' => $payload['customer_phone'] ?? null,
@@ -221,8 +268,9 @@ class Shop extends Controller
             }
         }
 
-        // Clear cart after successful order
-        $this->session->unset_userdata('shopping_cart');
+        // Clear cart after successful order from database
+        $ids = $this->getIdentifiers();
+        $this->CartModel->clearCart($ids['customer_id'], $ids['session_id']);
 
         redirect('track/' . $orderId);
     }
@@ -232,6 +280,168 @@ class Shop extends Controller
         $data['order'] = $this->OrderModel->find($order_id);
         $data['items'] = $this->db->table('order_items')->where('order_id', $order_id)->get_all();
         $this->call->view('shop/track', $data);
+    }
+
+    public function my_orders()
+    {
+        // Get customer from session
+        $customer = $this->session->userdata('customer');
+        
+        $data['orders'] = [];
+        $data['customer'] = $customer;
+        
+        // Try multiple approaches to get orders
+        if ($customer && isset($customer['id'])) {
+            // Get all orders for logged-in customer by customer_id
+            $data['orders'] = $this->db->raw("
+                SELECT o.*, 
+                       COUNT(oi.id) as item_count,
+                       (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as total_items
+                FROM orders o
+                LEFT JOIN order_items oi ON o.id = oi.order_id
+                WHERE o.customer_id = ?
+                GROUP BY o.id
+                ORDER BY o.created_at DESC
+            ", [$customer['id']])->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Also get orders by email if customer_id didn't match
+            if (empty($data['orders']) && !empty($customer['email'])) {
+                $data['orders'] = $this->db->raw("
+                    SELECT o.*, 
+                           COUNT(oi.id) as item_count,
+                           (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as total_items
+                    FROM orders o
+                    LEFT JOIN order_items oi ON o.id = oi.order_id
+                    WHERE o.customer_email = ?
+                    GROUP BY o.id
+                    ORDER BY o.created_at DESC
+                ", [$customer['email']])->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } else {
+            // Try to get orders by email/phone from session (guest checkout)
+            $guest_email = $this->session->userdata('guest_email');
+            $guest_phone = $this->session->userdata('guest_phone');
+            
+            if ($guest_email || $guest_phone) {
+                $conditions = [];
+                $params = [];
+                
+                if ($guest_email) {
+                    $conditions[] = "o.customer_email = ?";
+                    $params[] = $guest_email;
+                }
+                if ($guest_phone) {
+                    $conditions[] = "o.customer_phone = ?";
+                    $params[] = $guest_phone;
+                }
+                
+                $whereClause = implode(' OR ', $conditions);
+                
+                $data['orders'] = $this->db->raw("
+                    SELECT o.*, 
+                           COUNT(oi.id) as item_count,
+                           (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as total_items
+                    FROM orders o
+                    LEFT JOIN order_items oi ON o.id = oi.order_id
+                    WHERE $whereClause
+                    GROUP BY o.id
+                    ORDER BY o.created_at DESC
+                ", $params)->fetchAll(PDO::FETCH_ASSOC);
+            }
+        }
+        
+        $this->call->view('shop/my_orders', $data);
+    }
+
+    public function wishlist()
+    {
+        // Get wishlist from database
+        $ids = $this->getIdentifiers();
+        $wishlistItems = $this->WishlistModel->getWishlist($ids['customer_id'], $ids['session_id']);
+        
+        // Format products
+        $data['products'] = [];
+        foreach ($wishlistItems as $item) {
+            $data['products'][] = [
+                'id' => $item['product_id'],
+                'name' => $item['product_name'],
+                'price' => $item['price'],
+                'stock' => $item['stock'],
+                'sku' => $item['sku'],
+                'main_image' => $item['image']
+            ];
+        }
+        
+        $this->call->view('shop/wishlist', $data);
+    }
+
+    public function add_to_wishlist()
+    {
+        header('Content-Type: application/json');
+        
+        $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        
+        if ($productId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+            return;
+        }
+        
+        // Add to database
+        $ids = $this->getIdentifiers();
+        $result = $this->WishlistModel->addItem($productId, $ids['customer_id'], $ids['session_id']);
+        
+        if ($result) {
+            $count = $this->WishlistModel->getWishlistCount($ids['customer_id'], $ids['session_id']);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Added to wishlist',
+                'wishlist_count' => $count
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Already in wishlist'
+            ]);
+        }
+    }
+
+    public function remove_from_wishlist()
+    {
+        header('Content-Type: application/json');
+        
+        $productId = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        
+        if ($productId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+            return;
+        }
+        
+        // Remove from database
+        $ids = $this->getIdentifiers();
+        $this->WishlistModel->removeItem($productId, $ids['customer_id'], $ids['session_id']);
+        
+        $count = $this->WishlistModel->getWishlistCount($ids['customer_id'], $ids['session_id']);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Removed from wishlist',
+            'wishlist_count' => $count
+        ]);
+    }
+
+    public function get_wishlist()
+    {
+        header('Content-Type: application/json');
+        
+        $ids = $this->getIdentifiers();
+        $productIds = $this->WishlistModel->getWishlistProductIds($ids['customer_id'], $ids['session_id']);
+        $count = count($productIds);
+        
+        echo json_encode([
+            'success' => true,
+            'wishlist' => $productIds,
+            'wishlist_count' => $count
+        ]);
     }
 
     // POST /shop/save-location
@@ -292,48 +502,17 @@ class Shop extends Controller
             exit;
         }
         
-        // Get current cart from session
-        $cart = $this->session->userdata('shopping_cart') ?? [];
+        // Add to database
+        $ids = $this->getIdentifiers();
+        $this->CartModel->addOrUpdate($product_id, $quantity, $ids['customer_id'], $ids['session_id']);
         
-        // Check if product already in cart
-        $found = false;
-        $updatedCart = [];
-        foreach ($cart as $item) {
-            if ($item['product_id'] == $product_id) {
-                $newQty = $item['quantity'] + $quantity;
-                if ($newQty > $product['stock']) {
-                    echo json_encode(['success' => false, 'message' => 'Cannot add more than available stock']);
-                    exit;
-                }
-                $item['quantity'] = $newQty;
-                $item['subtotal'] = $newQty * $item['price'];
-                $found = true;
-            }
-            $updatedCart[] = $item;
-        }
-        $cart = $updatedCart;
-        
-        // If not found, add new item
-        if (!$found) {
-            $cart[] = [
-                'product_id' => $product_id,
-                'product_name' => $product['name'],
-                'price' => (float)$product['price'],
-                'quantity' => $quantity,
-                'subtotal' => (float)$product['price'] * $quantity,
-                'image' => $this->get_product_image($product_id)
-            ];
-        }
-        
-        // Save cart to session
-        $this->session->set_userdata('shopping_cart', $cart);
-        
-        // Calculate cart totals
+        // Get updated cart totals
+        $cart = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
         $cart_count = 0;
         $cart_total = 0;
         foreach ($cart as $item) {
-            $cart_count += $item['quantity'];
-            $cart_total += $item['subtotal'];
+            $cart_count += (int)$item['quantity'];
+            $cart_total += (float)$item['price'] * (int)$item['quantity'];
         }
         
         echo json_encode([
@@ -350,13 +529,25 @@ class Shop extends Controller
     {
         header('Content-Type: application/json');
         
-        $cart = $this->session->userdata('shopping_cart') ?? [];
+        $ids = $this->getIdentifiers();
+        $cartItems = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
         
+        $cart = [];
         $cart_count = 0;
         $cart_total = 0;
-        foreach ($cart as $item) {
-            $cart_count += $item['quantity'];
-            $cart_total += $item['subtotal'];
+        foreach ($cartItems as $item) {
+            $subtotal = (float)$item['price'] * (int)$item['quantity'];
+            $cart[] = [
+                'id' => $item['id'],
+                'product_id' => $item['product_id'],
+                'product_name' => $item['product_name'],
+                'price' => (float)$item['price'],
+                'quantity' => (int)$item['quantity'],
+                'subtotal' => $subtotal,
+                'image' => $item['image']
+            ];
+            $cart_count += (int)$item['quantity'];
+            $cart_total += $subtotal;
         }
         
         echo json_encode([
@@ -381,14 +572,18 @@ class Shop extends Controller
             exit;
         }
         
-        $cart = $this->session->userdata('shopping_cart') ?? [];
+        $ids = $this->getIdentifiers();
         
         // If quantity is 0, remove item
         if ($quantity <= 0) {
-            $cart = array_filter($cart, function($item) use ($product_id) {
-                return $item['product_id'] != $product_id;
-            });
-            $cart = array_values($cart); // Re-index array
+            // Find cart item by product_id
+            $cartItems = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
+            foreach ($cartItems as $item) {
+                if ($item['product_id'] == $product_id) {
+                    $this->CartModel->removeItem($item['id'], $ids['customer_id'], $ids['session_id']);
+                    break;
+                }
+            }
         } else {
             // Update quantity
             $product = $this->ProductModel->find($product_id);
@@ -402,24 +597,23 @@ class Shop extends Controller
                 exit;
             }
             
-            $updatedCart = [];
-            foreach ($cart as $item) {
+            // Find and update cart item
+            $cartItems = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
+            foreach ($cartItems as $item) {
                 if ($item['product_id'] == $product_id) {
-                    $item['quantity'] = $quantity;
-                    $item['subtotal'] = $quantity * $item['price'];
+                    $this->CartModel->updateQuantity($item['id'], $quantity);
+                    break;
                 }
-                $updatedCart[] = $item;
             }
-            $cart = $updatedCart;
         }
         
-        $this->session->set_userdata('shopping_cart', $cart);
-        
+        // Get updated cart
+        $cart = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
         $cart_count = 0;
         $cart_total = 0;
         foreach ($cart as $item) {
-            $cart_count += $item['quantity'];
-            $cart_total += $item['subtotal'];
+            $cart_count += (int)$item['quantity'];
+            $cart_total += (float)$item['price'] * (int)$item['quantity'];
         }
         
         echo json_encode([
@@ -444,19 +638,24 @@ class Shop extends Controller
             exit;
         }
         
-        $cart = $this->session->userdata('shopping_cart') ?? [];
-        $cart = array_filter($cart, function($item) use ($product_id) {
-            return $item['product_id'] != $product_id;
-        });
-        $cart = array_values($cart); // Re-index array
+        $ids = $this->getIdentifiers();
         
-        $this->session->set_userdata('shopping_cart', $cart);
+        // Find and remove cart item
+        $cartItems = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
+        foreach ($cartItems as $item) {
+            if ($item['product_id'] == $product_id) {
+                $this->CartModel->removeItem($item['id'], $ids['customer_id'], $ids['session_id']);
+                break;
+            }
+        }
         
+        // Get updated cart
+        $cart = $this->CartModel->getCart($ids['customer_id'], $ids['session_id']);
         $cart_count = 0;
         $cart_total = 0;
         foreach ($cart as $item) {
-            $cart_count += $item['quantity'];
-            $cart_total += $item['subtotal'];
+            $cart_count += (int)$item['quantity'];
+            $cart_total += (float)$item['price'] * (int)$item['quantity'];
         }
         
         echo json_encode([
@@ -474,7 +673,8 @@ class Shop extends Controller
     {
         header('Content-Type: application/json');
         
-        $this->session->unset_userdata('shopping_cart');
+        $ids = $this->getIdentifiers();
+        $this->CartModel->clearCart($ids['customer_id'], $ids['session_id']);
         
         echo json_encode([
             'success' => true,
