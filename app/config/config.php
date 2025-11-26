@@ -79,7 +79,7 @@ $config['ENVIRONMENT']             = 'development';
 | WARNING: You MUST set this value!
 |
 */
-$config['base_url'] 				= 'http://localhost:8080/techtrack1.3/';
+$config['base_url'] 				= getenv('RAILWAY_PUBLIC_DOMAIN') ? 'https://' . getenv('RAILWAY_PUBLIC_DOMAIN') . '/' : (getenv('BASE_URL') ?: 'http://localhost:8080/techtrack1.3/');
 
 /*
 |--------------------------------------------------------------------------
