@@ -1,6 +1,14 @@
 {
   "require": {
+    "php": "^8.0",
     "google/apiclient": "^2.15",
     "luigel/paymongo-php-sdk": "^1.0"
+  },
+  "require-dev": {},
+  "config": {
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.2"
+    }
   }
 }
