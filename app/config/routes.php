@@ -99,11 +99,12 @@ $router->group('/admin', function() use ($router) {
 	$router->get('/reports/export_pdf', 'AdminReports::export_pdf');
 	$router->get('/alerts', 'AdminAlerts::index');
 	$router->get('/alerts/get-notifications', 'AdminAlerts::getNotifications');
+	$router->match('/alerts/dismiss/{id}', 'AdminAlerts::dismiss', ['post']);
 	$router->get('/settings', 'AdminSettings::index');
 	$router->match('/settings/update', 'AdminSettings::update', ['post']);
 
 	// Dev migration trigger (DISABLED IN PRODUCTION)
-	// $router->get('/migrate', 'DevMigrate::migrate');
+	$router->get('/migrate', 'DevMigrate::migrate');
     // Dev seeder trigger (DISABLED IN PRODUCTION)
     // $router->get('/seed', 'DevMigrate::seed');
 });
@@ -172,4 +173,13 @@ $router->group('/api', function() use ($router) {
 	$router->get('/orders', 'ApiOrders::index');
 	$router->get('/orders/{id}', 'ApiOrders::show');
 	$router->match('/orders', 'ApiOrders::store', ['post']);
+	
+	// Rating & Review API endpoints
+	$router->match('/ratings/submit', 'ApiRatings::submit', ['post']);
+	$router->get('/ratings/stats/{product_id}', 'ApiRatings::stats');
+	$router->get('/ratings/my-rating/{product_id}', 'ApiRatings::my_rating');
+	$router->match('/ratings/review', 'ApiRatings::review', ['post']);
+	$router->get('/ratings/reviews/{product_id}', 'ApiRatings::reviews');
+	$router->match('/ratings/helpful/{review_id}', 'ApiRatings::helpful', ['post']);
+	$router->match('/ratings/delete/{rating_id}', 'ApiRatings::delete', ['post', 'delete']);
 });

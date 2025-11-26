@@ -1,5 +1,9 @@
 <?php
 define('PREVENT_DIRECT_ACCESS', TRUE);
+
+// Set default timezone to Philippine Standard Time (UTC+8)
+date_default_timezone_set('Asia/Manila');
+
 /**
  * ------------------------------------------------------------------
  * LavaLust - an opensource lightweight PHP MVC Framework

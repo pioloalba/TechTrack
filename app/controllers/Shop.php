@@ -523,32 +523,62 @@ class Shop extends Controller
     // Add to cart
     public function add_to_cart()
     {
-        header('Content-Type: application/json');
+        // Check if this is an AJAX request
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
         
-        $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
-        $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
+        $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : (isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0);
+        $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : (isset($_GET['quantity']) ? (int)$_GET['quantity'] : 1);
         
         if ($product_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
-            exit;
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+                exit;
+            } else {
+                $this->session->set_flashdata(['error' => 'Invalid product ID']);
+                redirect('shop');
+                return;
+            }
         }
         
         if ($quantity <= 0) {
-            echo json_encode(['success' => false, 'message' => 'Invalid quantity']);
-            exit;
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Invalid quantity']);
+                exit;
+            } else {
+                $this->session->set_flashdata(['error' => 'Invalid quantity']);
+                redirect('shop');
+                return;
+            }
         }
         
         // Get product details
         $product = $this->ProductModel->find($product_id);
         if (!$product) {
-            echo json_encode(['success' => false, 'message' => 'Product not found']);
-            exit;
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Product not found']);
+                exit;
+            } else {
+                $this->session->set_flashdata(['error' => 'Product not found']);
+                redirect('shop');
+                return;
+            }
         }
         
         // Check stock
         if ($product['stock'] < $quantity) {
-            echo json_encode(['success' => false, 'message' => 'Insufficient stock']);
-            exit;
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Insufficient stock']);
+                exit;
+            } else {
+                $this->session->set_flashdata(['error' => 'Insufficient stock for ' . $product['name']]);
+                redirect('shop');
+                return;
+            }
         }
         
         // Add to database
@@ -564,13 +594,20 @@ class Shop extends Controller
             $cart_total += (float)$item['price'] * (int)$item['quantity'];
         }
         
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Product added to cart',
-            'cart_count' => $cart_count,
-            'cart_total' => $cart_total
-        ]);
-        exit;
+        // Return JSON for AJAX or redirect for direct access
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Product added to cart',
+                'cart_count' => $cart_count,
+                'cart_total' => $cart_total
+            ]);
+            exit;
+        } else {
+            $this->session->set_flashdata(['success' => $product['name'] . ' added to cart']);
+            redirect('checkout');
+        }
     }
     
     // Get cart

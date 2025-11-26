@@ -30,6 +30,16 @@ class GoogleAuth extends Controller
         $this->client->setClientSecret($this->config['client_secret']);
         $this->client->setRedirectUri($this->config['redirect_uri']);
         $this->client->addScope($this->config['scopes']);
+        
+        // For localhost development only - disable SSL verification
+        // TODO: Remove this in production and configure proper SSL certificates
+        if (strpos($this->config['redirect_uri'], 'localhost') !== false) {
+            $httpClient = new GuzzleHttp\Client([
+                'verify' => false
+            ]);
+            $this->client->setHttpClient($httpClient);
+            error_log('WARNING: SSL verification disabled for localhost development');
+        }
     }
 
     /**
@@ -68,14 +78,15 @@ class GoogleAuth extends Controller
         $this->session->unset_userdata('google_oauth_state');
         
         // Check for error from Google
-        if ($this->io->get('error')) {
+        $error = isset($_GET['error']) ? $_GET['error'] : null;
+        if ($error) {
             $this->session->set_flashdata('cust_error', 'Google authentication was cancelled or failed.');
             redirect('shop/login');
             return;
         }
         
         // Get authorization code
-        $code = $this->io->get('code');
+        $code = isset($_GET['code']) ? $_GET['code'] : null;
         if (!$code) {
             $this->session->set_flashdata('cust_error', 'No authorization code received from Google.');
             redirect('shop/login');
@@ -84,12 +95,15 @@ class GoogleAuth extends Controller
         
         try {
             // Exchange authorization code for access token
+            error_log('Attempting to fetch access token with code: ' . substr($code, 0, 20) . '...');
             $token = $this->client->fetchAccessTokenWithAuthCode($code);
             
             if (isset($token['error'])) {
+                error_log('Token error: ' . print_r($token, true));
                 throw new Exception('Error fetching access token: ' . $token['error']);
             }
             
+            error_log('Access token received successfully');
             $this->client->setAccessToken($token);
             
             // Get user info from Google
@@ -99,16 +113,19 @@ class GoogleAuth extends Controller
             // Extract user data
             $googleId = $google_account_info->id;
             $email = $google_account_info->email;
-            $firstName = $google_account_info->givenName;
-            $lastName = $google_account_info->familyName;
-            $picture = $google_account_info->picture;
+            $firstName = $google_account_info->givenName ?? '';
+            $lastName = $google_account_info->familyName ?? '';
+            $picture = $google_account_info->picture ?? '';
+            
+            error_log('Google user info: ' . $email . ' (ID: ' . $googleId . ')');
             
             // Process OAuth login (create or login customer)
             $this->processOAuthLogin($googleId, $email, $firstName, $lastName, $picture);
             
         } catch (Exception $e) {
             error_log('Google OAuth Error: ' . $e->getMessage());
-            $this->session->set_flashdata('cust_error', 'Failed to authenticate with Google. Please try again.');
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            $this->session->set_flashdata('cust_error', 'Failed to authenticate with Google: ' . $e->getMessage());
             redirect('shop/login');
         }
     }
@@ -118,37 +135,58 @@ class GoogleAuth extends Controller
      */
     private function processOAuthLogin($googleId, $email, $firstName, $lastName, $picture)
     {
-        // Check if customer exists with this Google ID
-        $customer = $this->CustomerModel->where('google_id', $googleId)->get();
+        // Check if customer exists with this Google ID (if column exists)
+        $customer = null;
+        try {
+            $stmt = $this->db->raw('SELECT * FROM customers WHERE google_id = ? LIMIT 1', [$googleId]);
+            $customer = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
+        } catch (Exception $e) {
+            // google_id column might not exist yet
+            error_log('google_id column not found: ' . $e->getMessage());
+        }
         
         if (!$customer) {
             // Check if email already exists (regular account)
-            $customer = $this->CustomerModel->where('email', $email)->get();
+            $stmt = $this->db->raw('SELECT * FROM customers WHERE email = ? LIMIT 1', [$email]);
+            $customer = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
             
             if ($customer) {
-                // Link existing account with Google ID
-                $this->CustomerModel->where('id', $customer['id'])->update([
-                    'google_id' => $googleId,
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
+                // Link existing account with Google ID (if column exists)
+                try {
+                    $this->db->raw(
+                        'UPDATE customers SET google_id = ? WHERE id = ?',
+                        [$googleId, $customer['id']]
+                    );
+                } catch (Exception $e) {
+                    // google_id column might not exist, continue anyway
+                    error_log('Could not update google_id: ' . $e->getMessage());
+                }
             } else {
                 // Create new customer account
-                $customerId = $this->CustomerModel->insert([
-                    'google_id' => $googleId,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'email' => $email,
-                    'phone' => '',
-                    'address' => '',
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
+                $fullName = trim($firstName . ' ' . $lastName);
+                
+                try {
+                    // Insert with google_id
+                    $this->db->raw(
+                        'INSERT INTO customers (name, email, phone, google_id, total_orders, total_spent, is_vip) 
+                         VALUES (?, ?, NULL, ?, 0, 0.00, 0)',
+                        [$fullName, $email, $googleId]
+                    );
+                } catch (Exception $e) {
+                    // If google_id column doesn't exist, insert without it
+                    error_log('Could not insert with google_id, trying without: ' . $e->getMessage());
+                    $this->db->raw(
+                        'INSERT INTO customers (name, email, phone, total_orders, total_spent, is_vip) 
+                         VALUES (?, ?, NULL, 0, 0.00, 0)',
+                        [$fullName, $email]
+                    );
+                }
+                
+                $customerId = (int)$this->db->last_id();
                 
                 $customer = [
                     'id' => $customerId,
-                    'google_id' => $googleId,
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
+                    'name' => $fullName,
                     'email' => $email
                 ];
             }
@@ -161,8 +199,7 @@ class GoogleAuth extends Controller
         $this->session->set_userdata('customer', [
             'id' => $customer['id'],
             'email' => $customer['email'],
-            'first_name' => $customer['first_name'],
-            'last_name' => $customer['last_name'],
+            'name' => isset($customer['name']) ? $customer['name'] : trim($firstName . ' ' . $lastName),
             'oauth_provider' => 'google'
         ]);
         
@@ -204,10 +241,14 @@ class GoogleAuth extends Controller
         }
         
         // Remove Google ID from customer record
-        $this->CustomerModel->where('id', $customer['id'])->update([
-            'google_id' => null,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        try {
+            $this->db->raw(
+                'UPDATE customers SET google_id = NULL WHERE id = ?',
+                [$customer['id']]
+            );
+        } catch (Exception $e) {
+            error_log('Could not remove google_id: ' . $e->getMessage());
+        }
         
         // Update session
         $customerData = $this->session->userdata('customer');

@@ -159,15 +159,27 @@
      * Initialize category filter
      */
     function initFilters() {
+        console.log('=== Initializing Filters ===');
+        console.log('filterCategory element:', $('#filterCategory').length);
+        console.log('filterStock element:', $('#filterStock').length);
+        console.log('productsGrid element:', $('#productsGrid').length);
+        
         $('#filterCategory').on('change', function () {
             const category = $(this).val();
             const search = $('#searchProducts').val().toLowerCase();
             const stockStatus = $('#filterStock').val();
             
+            console.log('=== Category Filter Changed ===');
+            console.log('Selected category:', category);
+            console.log('Search query:', search);
+            console.log('Stock status:', stockStatus);
+            
             // Check if grid view exists, otherwise use table
             if ($('#productsGrid').length) {
+                console.log('Using grid filter');
                 filterGrid(search, category, stockStatus);
             } else {
+                console.log('Using table filter');
                 filterTable(search, category);
             }
         });
@@ -176,6 +188,12 @@
             const stockStatus = $(this).val();
             const search = $('#searchProducts').val().toLowerCase();
             const category = $('#filterCategory').val();
+            
+            console.log('=== Stock Filter Changed ===');
+            console.log('Selected stock status:', stockStatus);
+            console.log('Search query:', search);
+            console.log('Category:', category);
+            
             filterGrid(search, category, stockStatus);
         });
         
@@ -222,18 +240,23 @@
      * Filter grid based on search, category, and stock status
      */
     function filterGrid(searchQuery, category, stockStatus) {
+        console.log('Filtering grid:', { searchQuery, category, stockStatus });
+        
         $('.product-card').each(function () {
             const $card = $(this);
             const name = $card.find('.product-card-title').text().toLowerCase();
             const sku = $card.find('.product-sku').text().toLowerCase();
-            const cardCategory = $card.attr('data-category').toLowerCase();
+            const cardCategory = $card.attr('data-category') || '';
             const cardStatus = $card.attr('data-status');
 
             const matchesSearch = !searchQuery || name.includes(searchQuery) || sku.includes(searchQuery);
-            const matchesCategory = !category || cardCategory === category.toLowerCase();
+            const matchesCategory = !category || cardCategory.toLowerCase() === category.toLowerCase();
             const matchesStock = !stockStatus || cardStatus === stockStatus;
 
-            $card.toggle(matchesSearch && matchesCategory && matchesStock);
+            const shouldShow = matchesSearch && matchesCategory && matchesStock;
+            console.log('Card:', name, '| Category:', cardCategory, '| Matches:', shouldShow);
+            
+            $card.toggle(shouldShow);
         });
     }
 

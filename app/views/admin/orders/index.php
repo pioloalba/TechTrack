@@ -58,7 +58,8 @@
                             'cancelled' => ['bg' => '#FEE2E2', 'text' => '#991B1B', 'dot' => '#EF4444']
                         ];
                         $statusColor = $statusColors[$status] ?? $statusColors['pending'];
-                        $orderDate = new DateTime($order['created_at'] ?? 'now');
+                        $orderDate = new DateTime($order['created_at'] ?? 'now', new DateTimeZone('UTC'));
+                        $orderDate->setTimezone(new DateTimeZone('Asia/Manila'));
                     ?>
                         <tr class="order-row" data-order-id="<?= html_escape($order['id']) ?>" data-customer="<?= html_escape(strtolower($order['customer_name'] ?? '')) ?>" data-status="<?= html_escape($status) ?>">
                             <td>

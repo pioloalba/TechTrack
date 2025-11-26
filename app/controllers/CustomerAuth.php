@@ -186,19 +186,40 @@ class CustomerAuth extends Controller
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
         
-        // Insert into customers table
-        $this->db->raw('
-            INSERT INTO customers (name, email, phone, total_orders, total_spent, is_vip, created_at) 
-            VALUES (?, ?, NULL, 0, 0.00, 0, NOW())
-        ', [$name, $email]);
-        
-        $customer_id = (int)$this->db->last_id();
-        
-        // Insert password into customer_auth table
-        $this->db->raw('
-            INSERT INTO customer_auth (customer_id, password, created_at, updated_at) 
-            VALUES (?, ?, NOW(), NOW())
-        ', [$customer_id, $hash]);
+        try {
+            // Begin transaction
+            $this->db->trans_start();
+            
+            // Insert into customers table
+            $this->db->raw('
+                INSERT INTO customers (name, email, phone, total_orders, total_spent, is_vip) 
+                VALUES (?, ?, NULL, 0, 0.00, 0)
+            ', [$name, $email]);
+            
+            $customer_id = (int)$this->db->last_id();
+            
+            if (!$customer_id || $customer_id <= 0) {
+                throw new Exception('Failed to create customer account');
+            }
+            
+            // Insert password into customer_auth table
+            $this->db->raw('
+                INSERT INTO customer_auth (customer_id, password, created_at, updated_at) 
+                VALUES (?, ?, NOW(), NOW())
+            ', [$customer_id, $hash]);
+            
+            // Commit transaction
+            $this->db->trans_complete();
+            
+            if ($this->db->trans_status() === false) {
+                throw new Exception('Database transaction failed');
+            }
+        } catch (Exception $e) {
+            // Rollback on error
+            $this->db->trans_rollback();
+            error_log('Customer registration error: ' . $e->getMessage());
+            return $this->respond(false, 'Failed to create account. Please try again.', 'shop/register');
+        }
 
         // Auto-login after registration
         $this->session->set_userdata('customer', [

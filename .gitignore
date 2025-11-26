@@ -21,3 +21,16 @@ runtime/*
 client_secret_*.json
 app/config/google_oauth.php
 app/config/paymongo.php
+
+# Environment files for production
+.env
+.env.local
+.env.production
+
+# Composer dependencies
+vendor/
+
+# Temporary and log files
+*.tmp
+*.log
+

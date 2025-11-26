@@ -97,10 +97,15 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div style="display:flex;align-items:center;gap:12px;">
                         <span class="priority-badge" style="background:<?= $colors['bg'] ?>;color:<?= $colors['text'] ?>;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">
                             <?= $priority ?>
                         </span>
+                        <button class="dismiss-alert-btn" data-product-id="<?= $product['id'] ?>" title="Dismiss alert">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -179,7 +184,116 @@
         height: 48px;
     }
 }
+
+.dismiss-alert-btn {
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    color: #DC2626;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dismiss-alert-btn:hover {
+    background: #FEF2F2;
+    transform: scale(1.05);
+}
+
+.dismiss-alert-btn:active {
+    transform: scale(0.95);
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle dismiss alert button clicks
+    document.querySelectorAll('.dismiss-alert-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const alertItem = this.closest('.alert-item');
+            
+            if (confirm('Are you sure you want to dismiss this alert?\n\nThis will remove the notification until stock drops below threshold again.')) {
+                dismissAlert(productId, alertItem);
+            }
+        });
+    });
+});
+
+function dismissAlert(productId, alertItem) {
+    // Add loading state
+    alertItem.style.opacity = '0.5';
+    alertItem.style.pointerEvents = 'none';
+    
+    // Send AJAX request to dismiss alert
+    fetch('<?= base_url() ?>admin/alerts/dismiss/' + productId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Fade out and remove the alert item
+            alertItem.style.transition = 'opacity 0.3s, transform 0.3s';
+            alertItem.style.opacity = '0';
+            alertItem.style.transform = 'translateX(20px)';
+            
+            setTimeout(function() {
+                alertItem.remove();
+                
+                // Check if there are no more alerts
+                const remainingAlerts = document.querySelectorAll('.alert-item');
+                if (remainingAlerts.length === 0) {
+                    location.reload(); // Reload to show "All Good" message
+                }
+            }, 300);
+            
+            // Show success message (optional)
+            showNotification('Alert dismissed successfully', 'success');
+        } else {
+            alertItem.style.opacity = '1';
+            alertItem.style.pointerEvents = 'auto';
+            showNotification(data.message || 'Failed to dismiss alert', 'error');
+        }
+    })
+    .catch(error => {
+        alertItem.style.opacity = '1';
+        alertItem.style.pointerEvents = 'auto';
+        showNotification('Error dismissing alert', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function showNotification(message, type) {
+    // Simple notification (you can replace with your existing notification system)
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        padding: 16px 24px;
+        background: ${type === 'success' ? '#10B981' : '#EF4444'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
 
 </div>
 </div>

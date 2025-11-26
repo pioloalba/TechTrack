@@ -1,0 +1,41 @@
+# Render Blueprint for TechTrack
+# This file defines your service configuration for Render
+
+services:
+  # Web Service
+  - type: web
+    name: techtrack-app
+    env: php
+    buildCommand: "./build.sh"
+    startCommand: "php -S 0.0.0.0:$PORT -t ."
+    plan: free # Change to 'starter' or higher for production
+    
+    # Environment Variables (override these in Render Dashboard)
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      
+      - key: BASE_URL
+        value: https://techtrack-app.onrender.com/
+      
+      # Database - Add these in Render Dashboard with actual values
+      - key: DB_HOST
+        sync: false # Don't sync from repo, set manually
+      
+      - key: DB_USER
+        sync: false
+      
+      - key: DB_PASS
+        sync: false
+      
+      - key: DB_NAME
+        sync: false
+      
+      - key: DB_PORT
+        value: 3306
+    
+    # Health check endpoint (optional)
+    healthCheckPath: /
+    
+    # Auto-deploy when pushing to main branch
+    autoDeploy: true

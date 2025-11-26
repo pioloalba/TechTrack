@@ -132,7 +132,9 @@ class Session {
 			$handler = new FileSessionHandler();
 			session_set_save_handler($handler, TRUE);
 		} elseif ( ! empty($this->config['sess_driver']) AND $this->config['sess_driver'] == 'database' ) {
-
+			require_once 'Session/DatabaseSessionHandler.php';
+			$handler = new DatabaseSessionHandler();
+			session_set_save_handler($handler, TRUE);
 		}
 
 	    //On creation store the useragent fingerprint

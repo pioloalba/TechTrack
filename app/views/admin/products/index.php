@@ -664,6 +664,38 @@
 
 <script src="<?= base_url() ?>public/assets/js/products.js"></script>
 
+<script>
+// Debug script - Check if everything is loading
+console.log('=== Admin Products Page Debug ===');
+console.log('jQuery loaded:', typeof jQuery !== 'undefined');
+console.log('$ loaded:', typeof $ !== 'undefined');
+
+// Test after DOM is ready
+$(document).ready(function() {
+    console.log('=== DOM Ready ===');
+    console.log('filterCategory exists:', $('#filterCategory').length);
+    console.log('filterStock exists:', $('#filterStock').length);
+    console.log('productsGrid exists:', $('#productsGrid').length);
+    console.log('product-card count:', $('.product-card').length);
+    
+    // Check ALL product categories
+    console.log('=== All Product Categories ===');
+    $('.product-card').each(function(index) {
+        const category = $(this).data('category');
+        const name = $(this).find('.product-card-title').text();
+        console.log(`Product ${index + 1}: "${name}" - Category: "${category}"`);
+    });
+    
+    // Manual test of category filter
+    setTimeout(function() {
+        console.log('=== Testing Manual Filter Trigger ===');
+        $('#filterCategory').on('change.debug', function() {
+            console.log('DEBUG: Category changed to:', $(this).val());
+        });
+    }, 1000);
+});
+</script>
+
 </div>
 
 <!-- View Product Modal -->
