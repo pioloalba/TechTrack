@@ -37,6 +37,18 @@ class RatingModel extends Model
             return ['success' => false, 'message' => 'Product not found'];
         }
         
+        // PURCHASE VERIFICATION: Only allow registered customers who purchased the product to rate
+        if ($customer_id) {
+            $hasPurchased = $this->hasCustomerPurchasedProduct($product_id, $customer_id);
+            if (!$hasPurchased) {
+                return [
+                    'success' => false, 
+                    'message' => 'You must purchase this product before rating it.',
+                    'requires_purchase' => true
+                ];
+            }
+        }
+        
         // Check for existing rating
         $existing = $this->getCustomerRating($product_id, $customer_id, $session_id);
         
@@ -143,6 +155,34 @@ class RatingModel extends Model
             error_log("Failed to update product rating summary: " . $e->getMessage());
             return false;
         }
+    }
+    
+    /**
+     * Check if customer has purchased the product
+     * Only counts delivered or shipped orders
+     * 
+     * @param int $product_id
+     * @param int $customer_id
+     * @return bool
+     */
+    public function hasCustomerPurchasedProduct($product_id, $customer_id)
+    {
+        if (empty($customer_id)) {
+            return false;
+        }
+        
+        $sql = "
+            SELECT COUNT(DISTINCT o.id) as purchase_count
+            FROM orders o
+            INNER JOIN order_items oi ON o.id = oi.order_id
+            WHERE oi.product_id = ?
+                AND o.customer_id = ?
+                AND o.status IN ('delivered', 'shipped')
+        ";
+        
+        $result = $this->db->raw($sql, [$product_id, $customer_id])->fetch(PDO::FETCH_ASSOC);
+        
+        return (int)($result['purchase_count'] ?? 0) > 0;
     }
     
     /**

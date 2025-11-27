@@ -51,12 +51,23 @@ class Auth extends Controller
     // Admin Login Page
     public function admin_login()
     {
-        // If already logged in, redirect by role
+        // If already logged in, check the role
         $existing = $this->session->userdata('user');
         if ($existing) {
-            $role = $existing['role'] ?? 'Admin';
-            redirect($this->get_redirect_for_role($role));
-            return;
+            $role = strtolower($existing['role'] ?? '');
+            
+            // If admin or manager or cashier, redirect to their dashboard
+            if (in_array($role, ['admin', 'manager', 'cashier'])) {
+                redirect($this->get_redirect_for_role($role));
+                return;
+            }
+            
+            // If customer is logged in, they need to logout first to access admin login
+            // Clear customer session and continue to show admin login page
+            if ($role === 'customer') {
+                $this->session->unset_userdata('user');
+                $this->session->unset_userdata('customer_id');
+            }
         }
 
         // Ensure at least one admin exists (bootstrap)
@@ -76,12 +87,23 @@ class Auth extends Controller
     // Cashier Login Page
     public function cashier_login()
     {
-        // If already logged in, redirect by role
+        // If already logged in, check the role
         $existing = $this->session->userdata('user');
         if ($existing) {
-            $role = $existing['role'] ?? 'Admin';
-            redirect($this->get_redirect_for_role($role));
-            return;
+            $role = strtolower($existing['role'] ?? '');
+            
+            // If admin or manager or cashier, redirect to their dashboard
+            if (in_array($role, ['admin', 'manager', 'cashier'])) {
+                redirect($this->get_redirect_for_role($role));
+                return;
+            }
+            
+            // If customer is logged in, they need to logout first to access cashier login
+            // Clear customer session and continue to show cashier login page
+            if ($role === 'customer') {
+                $this->session->unset_userdata('user');
+                $this->session->unset_userdata('customer_id');
+            }
         }
 
         // Ensure at least one admin exists (bootstrap)

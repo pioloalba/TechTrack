@@ -105,12 +105,18 @@ class Shop extends Controller
         } else {
             $data['store_settings'] = null;
         }
+        
+        // Get featured testimonials from real customer reviews
+        $data['testimonials'] = $this->getFeaturedTestimonials();
 
         $this->call->view('shop/home', $data);
     }
 
     public function product($id)
     {
+        // Load QR code helper
+        $this->call->helper('qrcode');
+        
         $data['product'] = $this->ProductModel->find($id);
         // Attach gallery images and specs if available
         $data['images'] = $this->db->table('product_images')
@@ -121,7 +127,172 @@ class Shop extends Controller
             ->where('product_id', (int)$id)
             ->order_by('id ASC')
             ->get_all();
+        
+        // Load reviews with customer data
+        $data['reviews'] = $this->getProductReviews($id);
+        
+        // Check if current user can review (has purchased)
+        $ids = $this->getIdentifiers();
+        $data['can_review'] = false;
+        if ($ids['customer_id']) {
+            $this->call->model('ReviewModel');
+            $data['can_review'] = $this->ReviewModel->isVerifiedPurchase($id, $ids['customer_id']);
+        }
+        
+        // Generate QR code for product
+        $data['qr_code_url'] = product_qr_code($id, 150);
+        
         $this->call->view('shop/product', $data);
+    }
+    
+    /**
+     * Get product reviews with customer information
+     * Only shows approved reviews from verified purchases
+     */
+    private function getProductReviews($product_id)
+    {
+        $sql = "
+            SELECT 
+                pr.id,
+                pr.product_id,
+                pr.customer_id,
+                pr.customer_name,
+                pr.review_title,
+                pr.review_text,
+                pr.verified_purchase,
+                pr.helpful_count,
+                pr.created_at,
+                prat.rating,
+                c.name as customer_db_name,
+                c.email as customer_email,
+                c.phone as customer_phone
+            FROM product_reviews pr
+            INNER JOIN product_ratings prat ON pr.rating_id = prat.id
+            LEFT JOIN customers c ON pr.customer_id = c.id
+            WHERE pr.product_id = ?
+                AND pr.status = 'approved'
+            ORDER BY pr.created_at DESC
+            LIMIT 50
+        ";
+        
+        $reviews = $this->db->raw($sql, [$product_id])->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format reviews
+        foreach ($reviews as &$review) {
+            // Use stored name or fallback to database name
+            if (empty($review['customer_name']) && !empty($review['customer_db_name'])) {
+                $review['customer_name'] = $review['customer_db_name'];
+            }
+            if (empty($review['customer_name'])) {
+                $review['customer_name'] = 'Anonymous';
+            }
+            
+            // Format date
+            $review['formatted_date'] = date('F j, Y', strtotime($review['created_at']));
+            
+            // Generate star HTML
+            $rating = (int)$review['rating'];
+            $stars = '';
+            for ($i = 1; $i <= 5; $i++) {
+                if ($i <= $rating) {
+                    $stars .= '<span style="color: #FBBF24; font-size: 16px;">★</span>';
+                } else {
+                    $stars .= '<span style="color: #D1D5DB; font-size: 16px;">★</span>';
+                }
+            }
+            $review['stars_html'] = $stars;
+            
+            // Extract location (city or first part of address)
+            if (!empty($review['customer_location'])) {
+                $location_parts = explode(',', $review['customer_location']);
+                $review['display_location'] = trim($location_parts[0]);
+            } else {
+                $review['display_location'] = '';
+            }
+        }
+        
+        return $reviews;
+    }
+    
+    /**
+     * Get featured testimonials from customer reviews
+     */
+    private function getFeaturedTestimonials($limit = 6)
+    {
+        $sql = "
+            SELECT 
+                pr.id,
+                pr.customer_name,
+                pr.review_text,
+                pr.created_at,
+                prat.rating,
+                c.name as customer_db_name,
+                p.name as product_name
+            FROM product_reviews pr
+            INNER JOIN product_ratings prat ON pr.rating_id = prat.id
+            LEFT JOIN customers c ON pr.customer_id = c.id
+            LEFT JOIN products p ON pr.product_id = p.id
+            WHERE pr.status = 'approved'
+                AND prat.rating >= 4
+                AND pr.review_text IS NOT NULL
+                AND CHAR_LENGTH(pr.review_text) >= 10
+            ORDER BY prat.rating DESC, pr.created_at DESC
+            LIMIT ?
+        ";
+        
+        $testimonials = $this->db->raw($sql, [$limit])->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format testimonials
+        foreach ($testimonials as &$testimonial) {
+            // Use stored name or fallback
+            if (empty($testimonial['customer_name']) && !empty($testimonial['customer_db_name'])) {
+                $testimonial['customer_name'] = $testimonial['customer_db_name'];
+            }
+            if (empty($testimonial['customer_name'])) {
+                $testimonial['customer_name'] = 'Anonymous Customer';
+            }
+            
+            // Generate star HTML
+            $rating = (int)$testimonial['rating'];
+            $stars = str_repeat('⭐', $rating);
+            $testimonial['stars'] = $stars;
+            
+            // Calculate time ago
+            $testimonial['time_ago'] = $this->timeAgo($testimonial['created_at']);
+        }
+        
+        return $testimonials;
+    }
+    
+    /**
+     * Convert timestamp to human-readable time ago
+     */
+    private function timeAgo($datetime)
+    {
+        $timestamp = strtotime($datetime);
+        $diff = time() - $timestamp;
+        
+        if ($diff < 60) {
+            return 'just now';
+        } elseif ($diff < 3600) {
+            $mins = floor($diff / 60);
+            return $mins . ' minute' . ($mins > 1 ? 's' : '') . ' ago';
+        } elseif ($diff < 86400) {
+            $hours = floor($diff / 3600);
+            return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+        } elseif ($diff < 604800) {
+            $days = floor($diff / 86400);
+            return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+        } elseif ($diff < 2592000) {
+            $weeks = floor($diff / 604800);
+            return $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+        } elseif ($diff < 31536000) {
+            $months = floor($diff / 2592000);
+            return $months . ' month' . ($months > 1 ? 's' : '') . ' ago';
+        } else {
+            $years = floor($diff / 31536000);
+            return $years . ' year' . ($years > 1 ? 's' : '') . ' ago';
+        }
     }
 
     public function checkout()

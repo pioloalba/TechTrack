@@ -259,4 +259,66 @@ class ApiRatings extends Controller
             'message' => $result ? 'Rating deleted successfully' : 'Failed to delete rating'
         ]);
     }
+    
+    /**
+     * Check if customer can rate/review a product (purchased it)
+     * GET /api/ratings/can-review/{product_id}
+     */
+    public function can_review($product_id)
+    {
+        header('Content-Type: application/json');
+        
+        if (empty($product_id)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Product ID is required'
+            ]);
+            return;
+        }
+        
+        $ids = $this->getIdentifiers();
+        
+        // Must be logged in
+        if (empty($ids['customer_id'])) {
+            echo json_encode([
+                'success' => false,
+                'can_review' => false,
+                'message' => 'You must be logged in to leave a review',
+                'reason' => 'not_logged_in'
+            ]);
+            return;
+        }
+        
+        // Check if purchased
+        $hasPurchased = $this->properties['RatingModel']->hasCustomerPurchasedProduct(
+            $product_id,
+            $ids['customer_id']
+        );
+        
+        if (!$hasPurchased) {
+            echo json_encode([
+                'success' => false,
+                'can_review' => false,
+                'message' => 'You must purchase this product before reviewing it',
+                'reason' => 'not_purchased'
+            ]);
+            return;
+        }
+        
+        // Check if already reviewed
+        $existingRating = $this->properties['RatingModel']->getCustomerRating(
+            $product_id,
+            $ids['customer_id'],
+            null
+        );
+        
+        echo json_encode([
+            'success' => true,
+            'can_review' => true,
+            'has_purchased' => true,
+            'has_existing_rating' => !empty($existingRating),
+            'existing_rating' => $existingRating,
+            'message' => 'You can rate and review this product'
+        ]);
+    }
 }

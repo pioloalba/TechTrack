@@ -162,6 +162,15 @@
                 Update Status
             </button>
         </form>
+        
+        <!-- Order Tracking QR Code -->
+        <?php if (isset($order_qr_code)): ?>
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid #E5E7EB;text-align:center;">
+            <h4 style="margin:0 0 12px;font-size:14px;font-weight:600;color:#111827;">📦 Order Tracking QR</h4>
+            <img src="<?= html_escape($order_qr_code) ?>" alt="Order Tracking QR Code" style="max-width:150px;height:auto;border:2px solid #E5E7EB;border-radius:8px;padding:8px;background:#fff;margin-bottom:8px;">
+            <p style="color:#6B7280;font-size:11px;margin:0;">Share this QR code with the customer for order tracking</p>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -409,6 +409,12 @@
         .category-card:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transform: translateY(-4px);
+            border-color: #3B82F6;
+        }
+
+        .category-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .category-icon {
@@ -1437,53 +1443,119 @@
     <section class="categories">
         <div class="section-header">
             <h2 class="section-title">Shop by Category</h2>
-            <a href="#" class="view-all">View All ›</a>
+            <a href="<?= site_url('shop') ?>" class="view-all">View All ›</a>
         </div>
         <div class="categories-grid">
-            <div class="category-card">
-                <div class="category-icon">🖥️</div>
-                <div class="category-name">Processor</div>
-                <div class="category-count">45 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">⚡</div>
-                <div class="category-name">Motherboard</div>
-                <div class="category-count">32 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">🖥️</div>
-                <div class="category-name">Graphics Card</div>
-                <div class="category-count">28 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">💾</div>
-                <div class="category-name">Memory</div>
-                <div class="category-count">56 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">💿</div>
-                <div class="category-name">SSD</div>
-                <div class="category-count">64 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">🔌</div>
-                <div class="category-name">Power Supply</div>
-                <div class="category-count">38 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">📦</div>
-                <div class="category-name">PC Case</div>
-                <div class="category-count">42 items</div>
-            </div>
-            <div class="category-card">
-                <div class="category-icon">💻</div>
-                <div class="category-name">Laptop</div>
-                <div class="category-count">72 items</div>
-            </div>
+            <?php
+            // Get category counts from products
+            $categoryCounts = [];
+            foreach ($products ?? [] as $product) {
+                $category = $product['category'] ?? 'Uncategorized';
+                $categoryCounts[$category] = ($categoryCounts[$category] ?? 0) + 1;
+            }
+            
+            // Define category icon mapping
+            $categoryIcons = [
+                'Accessories' => '🎧',
+                'Accesories' => '🎧', // Typo variant
+                'Audio' => '🔊',
+                'Desktop' => '🖥️',
+                'Furniture' => '🪑',
+                'Laptop' => '💻',
+                'Monitors' => '🖥️',
+                'PC Parts' => '⚙️',
+                'Peripherals' => '⌨️',
+                'Processor' => '🖥️',
+                'Motherboard' => '⚡',
+                'Graphics Card' => '🎮',
+                'Memory' => '💾',
+                'SSD' => '💿',
+                'Power Supply' => '🔌',
+                'PC Case' => '📦',
+            ];
+            
+            // Sort categories by name for consistent display
+            ksort($categoryCounts);
+            
+            foreach ($categoryCounts as $categoryName => $count):
+                if ($count > 0): // Only show categories with products
+                    $icon = $categoryIcons[$categoryName] ?? '📦'; // Default icon
+            ?>
+                <div class="category-card" onclick="filterByCategory('<?= html_escape($categoryName) ?>')" style="cursor:pointer;">
+                    <div class="category-icon"><?= $icon ?></div>
+                    <div class="category-name"><?= html_escape($categoryName) ?></div>
+                    <div class="category-count"><?= $count ?> <?= $count == 1 ? 'item' : 'items' ?></div>
+                </div>
+            <?php 
+                endif;
+            endforeach; 
+            ?>
         </div>
     </section>
 
-    <?php
+    <?php if (!empty($category)): ?>
+    <!-- Filtered Products Section -->
+    <section class="category-section" style="margin-top:48px;">
+        <div class="section-header">
+            <h2 class="section-title">🔍 <?= html_escape($category) ?></h2>
+            <a href="<?= site_url('shop') ?>" class="view-all">← Back to All Products</a>
+        </div>
+        <div class="products-grid">
+            <?php if (!empty($products)): ?>
+                <?php foreach ($products as $product): 
+                    $img = $product_images[$product['id']] ?? null;
+                ?>
+                    <div class="product-card" data-product-id="<?= $product['id'] ?>">
+                        <button class="wishlist-heart-btn" onclick="toggleWishlist(<?= $product['id'] ?>, '<?= html_escape($product['name']) ?>')"><span class="heart-icon">🤍</span></button>
+                        <?php if ($img): ?>
+                            <img src="<?= html_escape($img) ?>" alt="<?= html_escape($product['name']) ?>" class="product-image">
+                        <?php else: ?>
+                            <div class="product-image" style="background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;">No Image</div>
+                        <?php endif; ?>
+                        <div class="product-info">
+                            <div>
+                                <div class="product-name"><?= html_escape($product['name'] ?? '') ?></div>
+                                <div class="product-rating">
+                                    <span class="stars">⭐⭐⭐⭐⭐</span>
+                                </div>
+                                <div class="product-price">₱<?= number_format((float)($product['price'] ?? 0), 0) ?></div>
+                                <div class="product-stock"><?= (int)($product['stock'] ?? 0) ?> in stock</div>
+                            </div>
+                            <div class="product-actions">
+                                <a href="<?= site_url('product/' . $product['id']) ?>" class="btn btn-secondary">View Product</a>
+                                <button class="btn btn-primary add-to-cart-btn" data-product-id="<?= $product['id'] ?>" data-product-name="<?= html_escape($product['name']) ?>">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div style="grid-column:1/-1;text-align:center;padding:40px;color:#6b7280;">
+                    No products found in this category.
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <?php if (!empty($pagination)): ?>
+        <!-- Pagination -->
+        <div style="display:flex;justify-content:center;margin-top:32px;gap:8px;">
+            <?php if ($pagination['current_page'] > 1): ?>
+                <a href="?category=<?= urlencode($category) ?>&page=<?= $pagination['current_page'] - 1 ?>" class="btn btn-secondary">← Previous</a>
+            <?php endif; ?>
+            
+            <span style="padding:12px 20px;background:#f3f4f6;border-radius:8px;font-weight:500;">
+                Page <?= $pagination['current_page'] ?> of <?= $pagination['total_pages'] ?>
+            </span>
+            
+            <?php if ($pagination['current_page'] < $pagination['total_pages']): ?>
+                <a href="?category=<?= urlencode($category) ?>&page=<?= $pagination['current_page'] + 1 ?>" class="btn btn-secondary">Next →</a>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+    </section>
+    <?php endif; ?>
+
+    <?php if (empty($category) && empty($search_query)): 
+    // Only show category sections when not filtering
     // Filter products by category (checking for exact category match or containing the word)
     $accessoriesProducts = array_filter($products ?? [], function($p) {
         $category = strtolower($p['category'] ?? '');
@@ -1774,49 +1846,27 @@
         </div>
     </section>
 
+    <?php endif; // End of home page category sections ?>
+
     <!-- Testimonials -->
+    <?php if (isset($testimonials) && count($testimonials) > 0): ?>
     <section class="testimonials">
         <h2>💬 What Customers Say About Us</h2>
-        <p class="testimonials-subtitle">Trusted by thousands of satisfied customers nationwide</p>
+        <p class="testimonials-subtitle">Real reviews from verified customers</p>
         <div class="testimonials-grid">
-            <div class="testimonial-card">
-                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testimonial-text">"Excellent service and fast delivery! Got my gaming PC in perfect condition. The staff helped me choose the right components for my budget."</p>
-                <div class="testimonial-author">John Martinez</div>
-                <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">Manila • 2 days ago</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testimonial-text">"Best prices in town! Staff is very helpful and knowledgeable. They explained everything clearly and made sure I got exactly what I needed."</p>
-                <div class="testimonial-author">Maria Santos</div>
-                <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">Quezon City • 1 week ago</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testimonial-text">"Built my dream PC here. Quality parts and great customer support! The warranty service is also top-notch. Highly recommended!"</p>
-                <div class="testimonial-author">David Chen</div>
-                <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">Makati • 2 weeks ago</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testimonial-text">"Amazing experience! Will definitely recommend to friends and family. The online ordering system is smooth and delivery was super quick."</p>
-                <div class="testimonial-author">Sarah Johnson</div>
-                <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">Pasig • 3 weeks ago</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testimonial-text">"Great selection of products at competitive prices. The checkout process was easy and my order arrived on time. Very satisfied customer!"</p>
-                <div class="testimonial-author">Ramon Valdez</div>
-                <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">Cebu • 1 month ago</div>
-            </div>
-            <div class="testimonial-card">
-                <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
-                <p class="testimonial-text">"Professional service from start to finish. They answered all my questions patiently. My laptop is running perfectly. 10/10 would buy again!"</p>
-                <div class="testimonial-author">Anna Rodriguez</div>
-                <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">Davao • 1 month ago</div>
-            </div>
+            <?php foreach ($testimonials as $testimonial): ?>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars"><?= $testimonial['stars'] ?></div>
+                    <p class="testimonial-text">"<?= htmlspecialchars($testimonial['review_text']) ?>"</p>
+                    <div class="testimonial-author"><?= htmlspecialchars($testimonial['customer_name']) ?></div>
+                    <div class="testimonial-date" style="color:#9CA3AF;font-size:13px;">
+                        <?= htmlspecialchars($testimonial['product_name']) ?> • <?= $testimonial['time_ago'] ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- Footer -->
     <footer class="footer">
@@ -2128,6 +2178,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: new URLSearchParams({
                             product_id: productId,
@@ -2166,8 +2217,8 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred. Please try again.');
+                        console.error('Error adding to cart:', error);
+                        showNotification('Failed to add to cart. Please try again.', 'error');
                         this.innerHTML = originalText;
                         this.disabled = false;
                         this.classList.remove('btn-loading');
@@ -2258,6 +2309,12 @@
                     btn.classList.remove('in-wishlist');
                 }
             });
+        }
+
+        // Filter products by category
+        function filterByCategory(category) {
+            // Redirect to shop page with category filter
+            window.location.href = '<?= site_url('shop') ?>?category=' + encodeURIComponent(category);
         }
 
         // Toggle wishlist

@@ -39,10 +39,17 @@ class AdminOrders extends AdminBase
 
     public function view($id)
     {
+        // Load QR code helper
+        $this->call->helper('qrcode');
+        
         $data['order'] = $this->OrderModel->find($id);
         $data['items'] = $this->db->table('order_items')->where('order_id', $id)->get_all();
         // shipping address (if any)
         $data['shipping'] = $this->db->table('shipping_addresses')->where('order_id', $id)->get();
+        
+        // Generate QR code for order tracking
+        $data['order_qr_code'] = order_tracking_qr_code($id, 150);
+        
         $this->call->view('admin/layouts/header', $data);
         $this->call->view('admin/layouts/sidebar', $data);
         $this->call->view('admin/orders/view', $data);

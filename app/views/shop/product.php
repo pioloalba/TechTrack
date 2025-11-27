@@ -433,6 +433,19 @@
       </div>
     </div>
 
+    <!-- QR Code Section -->
+    <div class="qr-code-section" style="background:#F9FAFB;border-radius:12px;padding:24px;margin-top:32px;text-align:center;">
+      <h3 style="font-size:18px;font-weight:600;color:#111827;margin-bottom:16px;">📱 Share this Product</h3>
+      <p style="color:#6B7280;font-size:14px;margin-bottom:20px;">Scan the QR code to view this product on your mobile device</p>
+      <?php if (isset($qr_code_url)): ?>
+        <img src="<?= $qr_code_url ?>" alt="Product QR Code" style="max-width:150px;height:auto;border:2px solid #E5E7EB;border-radius:8px;padding:8px;background:#fff;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div style="display:none;color:#EF4444;font-size:12px;padding:10px;background:#FEE2E2;border-radius:4px;margin-bottom:8px;">QR code failed to load. URL: <?= $qr_code_url ?></div>
+        <p style="color:#9CA3AF;font-size:12px;margin-top:12px;word-break:break-all;"><?= site_url('product/' . ($product['id'] ?? '')) ?></p>
+      <?php else: ?>
+        <p style="color:#EF4444;">QR code not generated</p>
+      <?php endif; ?>
+    </div>
+
     <?php if (!empty($specs)): ?>
     <div class="specs-section">
       <h2>Specifications</h2>
@@ -528,7 +541,84 @@
             </select>
           </div>
         </div>
-        <div id="reviews-list"></div>
+        <div id="reviews-list">
+          <?php if (!empty($reviews)): ?>
+            <?php foreach ($reviews as $review): ?>
+              <div class="testimonial-card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; margin-bottom: 20px; transition: all 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <!-- Review Header -->
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                      <div class="stars"><?= $review['stars_html'] ?></div>
+                      <?php if ($review['verified_purchase']): ?>
+                        <span style="background: #D1FAE5; color: #065F46; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                          <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                          </svg>
+                          Verified Purchase
+                        </span>
+                      <?php endif; ?>
+                    </div>
+                    <?php if (!empty($review['review_title'])): ?>
+                      <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 4px;"><?= html_escape($review['review_title']) ?></h4>
+                    <?php endif; ?>
+                  </div>
+                  <div style="text-align: right; font-size: 13px; color: #6B7280;">
+                    <?= html_escape($review['formatted_date']) ?>
+                  </div>
+                </div>
+                
+                <!-- Review Text -->
+                <?php if (!empty($review['review_text'])): ?>
+                  <p style="color: #374151; line-height: 1.6; font-size: 14px; margin-bottom: 16px;"><?= nl2br(html_escape($review['review_text'])) ?></p>
+                <?php endif; ?>
+                
+                <!-- Reviewer Info -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid #F3F4F6;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px;">
+                      <?= strtoupper(substr(html_escape($review['customer_name']), 0, 1)) ?>
+                    </div>
+                    <div>
+                      <div style="font-weight: 600; color: #111827; font-size: 14px;"><?= html_escape($review['customer_name']) ?></div>
+                      <?php if (!empty($review['display_location'])): ?>
+                        <div style="font-size: 12px; color: #6B7280; display: flex; align-items: center; gap: 4px;">
+                          <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                          </svg>
+                          <?= html_escape($review['display_location']) ?>
+                        </div>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  
+                  <!-- Helpful Button -->
+                  <?php if ($review['helpful_count'] > 0): ?>
+                    <div style="font-size: 13px; color: #6B7280; display: flex; align-items: center; gap: 6px;">
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
+                      </svg>
+                      <?= number_format($review['helpful_count']) ?> found this helpful
+                    </div>
+                  <?php endif; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div style="text-align: center; padding: 60px 20px; background: #F9FAFB; border-radius: 12px; border: 2px dashed #D1D5DB;">
+              <svg width="64" height="64" fill="#9CA3AF" viewBox="0 0 20 20" style="margin: 0 auto 16px;">
+                <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+              </svg>
+              <h3 style="font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 8px;">No reviews yet</h3>
+              <p style="color: #6B7280; font-size: 14px; margin-bottom: 20px;">Be the first to share your experience with this product!</p>
+              <?php if ($can_review ?? false): ?>
+                <button onclick="document.getElementById('write-review-form').style.display='block'" style="background: #3B82F6; color: white; padding: 10px 24px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-size: 14px; transition: background 0.2s;">
+                  Write First Review
+                </button>
+              <?php endif; ?>
+            </div>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
   </div>

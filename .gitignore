@@ -1,36 +1,60 @@
+# Operating System Files
 .DS_Store
+Thumbs.db
 
-app/vendor/*
-
+# Runtime and Logs
 runtime/*
 !runtime/.htaccess
 !runtime/index.html
+runtime/logs/*.php
+runtime/cache/*
 
 # IDE Files
-#-------------------------
 /nbproject/
 .idea/*
-
-## Sublime Text cache files
+.vscode/
 *.tmlanguage.cache
 *.tmPreferences.cache
 *.stTheme.cache
 *.sublime-workspace
 *.sublime-project
-# Google OAuth credentials
-client_secret_*.json
+
+# Sensitive Configuration Files
 app/config/google_oauth.php
 app/config/paymongo.php
-
-# Environment files for production
+client_secret_*.json
 .env
 .env.local
 .env.production
 
-# Composer dependencies
+# Composer Dependencies
 vendor/
+composer.lock
 
-# Temporary and log files
+# User Uploads
+public/uploads/*
+!public/uploads/.htaccess
+!public/uploads/.gitkeep
+
+# Temporary Files
 *.tmp
 *.log
+*.bak
+*.swp
+*~
+
+# Test Files (don't commit to production)
+test_*.php
+setup_checker.php
+verify_*.php
+phpinfo.php
+
+# Build and Export Files
+*.bat
+*.ps1
+export_*.php
+
+# Credentials and Sensitive Data
+NEW_SECURE_CREDENTIALS.txt
+PASSWORD_*.md
 

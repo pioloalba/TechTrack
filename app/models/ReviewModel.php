@@ -29,6 +29,28 @@ class ReviewModel extends Model
             return ['success' => false, 'message' => 'Rating not found. Please rate the product first.'];
         }
         
+        // PURCHASE VERIFICATION: Only allow customers who purchased the product to review
+        $customer_id = isset($data['customer_id']) ? (int)$data['customer_id'] : null;
+        if ($customer_id) {
+            $verifiedPurchase = $this->isVerifiedPurchase($data['product_id'], $customer_id);
+            if (!$verifiedPurchase) {
+                return [
+                    'success' => false,
+                    'message' => 'You must purchase this product before reviewing it.',
+                    'requires_purchase' => true
+                ];
+            }
+            // Set verified purchase flag
+            $data['verified_purchase'] = true;
+        } else {
+            // Guest users cannot leave reviews (only ratings)
+            return [
+                'success' => false,
+                'message' => 'You must be logged in and have purchased this product to leave a review.',
+                'requires_login' => true
+            ];
+        }
+        
         // Check if review already exists for this rating
         $existing = $this->db->table($this->table)
             ->where('rating_id', $data['rating_id'])
@@ -162,13 +184,14 @@ class ReviewModel extends Model
             return false;
         }
         
+        // Only count delivered or shipped orders as verified purchases
         $sql = "
-            SELECT COUNT(*) as purchase_count
-            FROM order_items oi
-            INNER JOIN orders o ON oi.order_id = o.id
+            SELECT COUNT(DISTINCT o.id) as purchase_count
+            FROM orders o
+            INNER JOIN order_items oi ON o.id = oi.order_id
             WHERE oi.product_id = ?
                 AND o.customer_id = ?
-                AND o.status IN ('completed', 'delivered', 'shipped')
+                AND o.status IN ('delivered', 'shipped')
         ";
         
         $result = $this->db->raw($sql, [$product_id, $customer_id])->fetch(PDO::FETCH_ASSOC);
